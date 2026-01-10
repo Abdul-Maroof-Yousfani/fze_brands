@@ -10,34 +10,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Upload code via SFTP using SSH
+      # 2️⃣ Upload via SFTP user (fzeuser)
+      - name: Upload files via SFTP
+        run: |
+          echo "Uploading files to /deploy via SFTP..."
+          sftp -o StrictHostKeyChecking=no ${{ secrets.SFTP_USER }}@${{ secrets.SFTP_HOST }} <<EOF
+          cd deploy
+          lcd .
+          mput *
+          bye
+          EOF
+
+      # 3️⃣ Sync /deploy → live and reload Apache via root password SSH
+      - name: Sync deploy to live and reload Apache
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTP_USER }}
-          password: ${{ secrets.SFTP_PASS }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASS }}
           script: |
             set -e
             DEPLOY=/var/www/fze.erpcode.live/deploy
-
-            echo "Uploading files..."
-            mkdir -p $DEPLOY
-
-            # Use lftp for simple SFTP upload
-            lftp -u ${{ secrets.SFTP_USER }},${{ secrets.SFTP_PASS }} sftp://localhost <<EOF
-            mirror -R --verbose --delete --parallel=4 ./ $DEPLOY
-            quit
-            EOF
-
-            echo "Syncing deploy → live"
             LIVE=/var/www/fze.erpcode.live
+
+            echo "Syncing /deploy → live folder..."
             rsync -a --delete --exclude deploy/ $DEPLOY/ $LIVE/
 
-            echo "Clearing deploy folder"
+            echo "Clearing deploy folder..."
             rm -rf $DEPLOY/*
 
-            echo "Reloading Apache"
-            sudo systemctl reload apache2
+            echo "Reloading Apache..."
+            systemctl reload apache2
