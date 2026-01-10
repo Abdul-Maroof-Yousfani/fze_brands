@@ -1,4 +1,4 @@
-name: Apache SFTP Deploy
+name: Deploy fze.erpcode.live
 
 on:
   push:
@@ -10,19 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Upload to deploy folder (SFTP)
+      - name: Upload code to deploy folder via SFTP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
           password: ${{ secrets.SFTP_PASS }}
           source: "."
-          target: "/deploy"
+          target: "/var/www/fze.erpcode.live/deploy"
+          overwrite: true
+          strip_components: 0
+          debug: true
 
-      - name: Sync deploy → live (atomic-ish)
+      - name: Sync deploy → live folder on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SFTP_HOST }}
@@ -30,14 +33,14 @@ jobs:
           password: ${{ secrets.SFTP_PASS }}
           script: |
             set -e
-
             LIVE=/var/www/fze.erpcode.live
             DEPLOY=$LIVE/deploy
 
-            rsync -a --delete \
-              --exclude deploy \
-              $DEPLOY/ $LIVE/
+            echo "Syncing files from deploy → live"
+            rsync -a --delete --exclude deploy/ $DEPLOY/ $LIVE/
 
+            echo "Clearing deploy folder"
             rm -rf $DEPLOY/*
 
+            echo "Reloading Apache"
             sudo systemctl reload apache2
