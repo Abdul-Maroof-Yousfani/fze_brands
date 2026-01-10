@@ -13,18 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Upload code via SFTP
-        uses: appleboy/sftp-action@v0.1.3
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTP_USER }}
-          password: ${{ secrets.SFTP_PASS }}
-          source: "."
-          target: "/deploy"
-          rm: true
-          debug: true
-
-      - name: Sync deploy → live folder on server
+      - name: Upload code via SFTP using SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SFTP_HOST }}
@@ -32,10 +21,19 @@ jobs:
           password: ${{ secrets.SFTP_PASS }}
           script: |
             set -e
-            LIVE=/var/www/fze.erpcode.live
-            DEPLOY=$LIVE/deploy
+            DEPLOY=/var/www/fze.erpcode.live/deploy
 
-            echo "Syncing files from deploy → live"
+            echo "Uploading files..."
+            mkdir -p $DEPLOY
+
+            # Use lftp for simple SFTP upload
+            lftp -u ${{ secrets.SFTP_USER }},${{ secrets.SFTP_PASS }} sftp://localhost <<EOF
+            mirror -R --verbose --delete --parallel=4 ./ $DEPLOY
+            quit
+EOF
+
+            echo "Syncing deploy → live"
+            LIVE=/var/www/fze.erpcode.live
             rsync -a --delete --exclude deploy/ $DEPLOY/ $LIVE/
 
             echo "Clearing deploy folder"
