@@ -29,8 +29,8 @@ jobs:
             # Use lftp for simple SFTP upload
             lftp -u ${{ secrets.SFTP_USER }},${{ secrets.SFTP_PASS }} sftp://localhost <<EOF
             mirror -R --verbose --delete --parallel=4 ./ $DEPLOY
-            quit
-EOF
+            quit 
+            EOF
 
             echo "Syncing deploy → live"
             LIVE=/var/www/fze.erpcode.live
