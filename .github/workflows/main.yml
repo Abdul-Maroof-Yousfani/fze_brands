@@ -10,22 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
+      # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Upload via SFTP user (fzeuser)
+      # 2️⃣ Install sshpass for password-based SFTP
+      - name: Install sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      # 3️⃣ Upload files via SFTP to /deploy
       - name: Upload files via SFTP
         run: |
           echo "Uploading files to /deploy via SFTP..."
-          sftp -o StrictHostKeyChecking=no ${{ secrets.SFTP_USER }}@${{ secrets.SFTP_HOST }} <<EOF
+          sshpass -p "${{ secrets.SFTP_PASS }}" sftp -o StrictHostKeyChecking=no ${{ secrets.SFTP_USER }}@${{ secrets.SFTP_HOST }} <<EOF
           cd deploy
           lcd .
           mput *
           bye
           EOF
 
-      # 3️⃣ Sync /deploy → live and reload Apache via root password SSH
+      # 4️⃣ Sync deploy → live and reload Apache via root SSH
       - name: Sync deploy to live and reload Apache
         uses: appleboy/ssh-action@v1.0.3
         with:
