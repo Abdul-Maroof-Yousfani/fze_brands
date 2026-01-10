@@ -1,31 +1,43 @@
-name: Deploy website on push
+name: Apache SFTP Deploy
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  web-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: FTP Deploy
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+      - name: Upload to deploy folder (SFTP)
+        uses: appleboy/scp-action@v0.1.7
         with:
-          server: 188.166.248.183
-          username: dailyfood_deploy
-          password: depLaz**87Ftjb
-          protocol: ftp
-          port: 21
-          passive: true
-          local-dir: ./
-          server-dir: /fze.erpcode.live/
-          dangerous-clean-slate: false
-          exclude: |
-            **/.git*
-            **/node_modules/**
-            **/vendor/**
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASS }}
+          source: "."
+          target: "/deploy"
 
+      - name: Sync deploy → live (atomic-ish)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASS }}
+          script: |
+            set -e
+
+            LIVE=/var/www/fze.erpcode.live
+            DEPLOY=$LIVE/deploy
+
+            rsync -a --delete \
+              --exclude deploy \
+              $DEPLOY/ $LIVE/
+
+            rm -rf $DEPLOY/*
+
+            sudo systemctl reload apache2
