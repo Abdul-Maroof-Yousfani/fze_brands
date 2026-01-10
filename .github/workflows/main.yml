@@ -24,6 +24,7 @@ jobs:
           target: "/var/www/fze.erpcode.live/"
           strip_components: 0
 
+      
       # 2. Permissions aur Laravel setup
       - name: Execute SSH commands
         uses: appleboy/ssh-action@master
@@ -34,9 +35,25 @@ jobs:
           script: |
             cd /var/www/fze.erpcode.live
             
-            # Agar storage folder nahi hai to bana do (First time deployment ke liye)
+            # Directory structure create karna (Sudo ki zaroorat nahi)
             mkdir -p storage/framework/{sessions,views,cache}
             mkdir -p bootstrap/cache
 
-            # Permissions set karna (Ab folders maujood hain)
-            sudo
+            # Permissions set karna (Sirf un folders par jo user owned hain)
+            find . -type d -exec chmod 775 {} \;
+            find . -type f -exec chmod 664 {} \;
+            chmod -R 775 storage bootstrap/cache
+
+            # Laravel Optimization
+            # Agar composer path me nahi hai to full path use karein: /usr/local/bin/composer
+            composer install --no-dev --optimize-autoloader --no-interaction
+
+            # Cache clear (ye tabhi chalega jab .env file server par maujood ho)
+            if [ -f .env ]; then
+                php artisan config:cache
+                php artisan route:cache
+                php artisan view:cache
+                # php artisan migrate --force
+            else
+                echo ".env file not found, skipping artisan commands"
+            fi
