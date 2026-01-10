@@ -12,7 +12,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 1. Files ko SFTP ke zariye upload karna
+      # 1. Files upload karna (Khali folder me saari files chali jayengi)
       - name: Copy files via SFTP
         uses: appleboy/scp-action@master
         with:
@@ -21,33 +21,22 @@ jobs:
           password: ${{ secrets.SFTP_PASS }}
           port: 22
           source: "."
-          target: "/var/www/fze.erpcode.live"
-          rm: false
+          target: "/var/www/fze.erpcode.live/"
           strip_components: 0
-          overwrite: true
-          debug: true # Agar koi masla hua to detail log dikhayega
 
-      # 2. Server par Laravel commands run karna (SSH)
+      # 2. Permissions aur Laravel setup
       - name: Execute SSH commands
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
           password: ${{ secrets.SFTP_PASS }}
-          port: 22
           script: |
             cd /var/www/fze.erpcode.live
             
-            # Composer install (agar server par composer hai)
-            composer install --no-dev --optimize-autoloader --no-interaction
+            # Agar storage folder nahi hai to bana do (First time deployment ke liye)
+            mkdir -p storage/framework/{sessions,views,cache}
+            mkdir -p bootstrap/cache
 
-            # Database migrations
-            php artisan migrate --force
-
-            # Cache clear aur optimization
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-
-            # Permissions ensure karna (taake permission denied error na aaye)
-            chmod -R 775 storage bootstrap/cache
+            # Permissions set karna (Ab folders maujood hain)
+            sudo
