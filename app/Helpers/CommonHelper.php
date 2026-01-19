@@ -2044,6 +2044,7 @@ public static function getSubItemByBrand($id, $item_id = null)
                             ->get();
         return $sub_item;
     }
+    
     public static function get_all_subitem()
     {
 
