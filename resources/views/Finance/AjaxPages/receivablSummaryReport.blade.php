@@ -19,7 +19,7 @@
                     <div class="well">
                         <div class="row">
                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                <span class="subHeadingLabelClass">Client Wise Summary Report</span>
+                                <span class="subHeadingLabelClass">Customer Wise Summary Report</span>
                             </div>
                         </div>
                         <div class="lineHeight">&nbsp;</div>
@@ -34,7 +34,7 @@
                                                     <th colspan="3" class="text-center"><h3 style="text-align: center;"><?php echo CommonHelper::get_company_name(Session::get('run_company'));?></h3></th>
                                                 </thead>
                                                 <thead>
-                                                    <th colspan="3" class="text-center">Client Wise Summary Report</th>
+                                                    <th colspan="3" class="text-center">Customer Wise Summary Report</th>
                                                 </thead>
                                                 <thead>
                                                 <th colspan="3" class="text-right"><p style="float: right;">Printed On: <?php echo date_format(date_create(date('Y-m-d')),'F d, Y')?></p></th>
@@ -43,7 +43,7 @@
                                                 <th style="" class="text-center">S.No</th>
                                                 {{--<th class="text-center">Acc-Id</th>--}}
 
-                                                <th class="text-left">CLient Name</th>
+                                                <th class="text-left">Customer Name</th>
                                                 <th class="text-center">Amount</th>
                                                 </thead>
                                                 <tbody>
