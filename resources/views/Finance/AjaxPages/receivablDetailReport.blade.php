@@ -60,10 +60,11 @@
                                                             $total_amount+=$amount;
                                                             $amount=$amount*-1;
                                                             $advance+=$amount;
+                                                               $payable += $amount;
+
                                                             $amount=number_format($amount,2);
                                                             $amount='('.$amount.')';
-   $payable += $amount;
-
+   
 
                                                         else:
                                                             $payable+=$amount;
