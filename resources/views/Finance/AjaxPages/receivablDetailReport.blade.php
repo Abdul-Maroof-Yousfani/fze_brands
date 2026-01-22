@@ -88,6 +88,7 @@
                                                                         $amount=$amount*-1;
                                                                         $amount=number_format($amount,2);
                                                                         $amount='('.$amount.')';
+                                                                        $payable += $amount;
 
 
                                                                     else:
