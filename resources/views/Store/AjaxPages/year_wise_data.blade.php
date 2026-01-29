@@ -25,7 +25,7 @@
                     </tr>
                     </thead>
                     <tbody id="append_bundle">
-                                @php
+                        @php
                             $closingStock = 0;
                             $closingValue = 0;
                         @endphp
@@ -37,10 +37,9 @@
                             <td>{{$counter++}}</td>
                             <input type="hidden" name="warehouse[]" value="{{$row->id}}"/>
                             <td class="text-center">{{$row->name}}</td>
-                            <td><input step="any" type="number" class="form-control requiredField" value="0" name="closing_stock[]" id="closing_stock{{$counter}}" /> </td>
-                            <td><input step="any" type="number" class="form-control requiredField" value="0" name="closing_val[]" id="closing_val{{$counter}}" /> </td>
+                            <td><input step="any" type="number" onkeyup="calculateClosingStock()" class="form-control requiredField closing_stock" value="0" name="closing_stock[]" id="closing_stock{{$counter}}" /> </td>
+                            <td><input step="any" type="number" onkeyup="calculateClosingRate()" class="form-control requiredField closing_value" value="0" name="closing_val[]" id="closing_val{{$counter}}" /> </td>
                             <td style="display: none"><input type="text" class="form-control requiredField" value="0" name="batch_code[]" id="batch_code{{$counter}}" /> </td>
-                
                         </tr>
                     @endforeach
                         @else
@@ -54,10 +53,10 @@
                                 <td>{{$counter++}}</td>
                                 <input type="hidden" name="warehouse[]" value="{{$row1->warehouse_id}}"/>
                                 <td class="text-center">{{CommonHelper::get_name_warehouse($row1->warehouse_id)}}</td>
-                                <td><input step="any" type="number" class="form-control requiredField" value="{{$row1->qty}}" name="closing_stock[]"  id="closing_stock{{$counter}}" /> </td>
-                                <td><input step="any" type="number" class="form-control requiredField" value="{{$row1->amount}}" name="closing_val[]" id="closing_val{{$counter}}" /> </td>
+                                <td><input step="any" type="number" onkeyup="calculateClosingStock()" class="form-control requiredField closing_stock" value="{{$row1->qty}}" name="closing_stock[]"  id="closing_stock{{$counter}}" /> </td>
+                                <td><input step="any" type="number" onkeyup="calculateClosingRate()" class="form-control requiredField closing_value" value="{{$row1->amount}}" name="closing_val[]" id="closing_val{{$counter}}" /> </td>
                                 <td style="display: none"><input type="text" value="{{$row1->batch_code}}" class="form-control requiredField" value="" name="batch_code[]" id="batch_code{{$counter}}" /> </td>
-                          </tr>
+                            </tr>
                         @endforeach
                         @endif
                     </tbody>
@@ -65,8 +64,8 @@
                     <tbody>
                     <tr  style="font-size:large;font-weight: bold">
                         <td class="text-center" colspan="2">Total</td>
-                        <td id="" class="text-right" colspan="1"><input readonly class="form-control clear" type="text" value="{{ $closingStock }}" id="total_qty"/> </td>
-                        <td id="" class="text-right" colspan="1"><input readonly class="form-control clear" type="text" vaalue="{{ $closingValue }}" id="total_rate"/> </td>
+                        <td id="" class="text-right" colspan="1"><input readonly class="form-control clear closing_stock_value" type="text" value="{{ $closingStock }}" id="total_qty"/> </td>
+                        <td id="" class="text-right" colspan="1"><input readonly class="form-control clear closing_rate_value" type="text" value="{{ $closingValue }}" id="total_rate"/> </td>
 
 
                     </tr>
@@ -153,7 +152,31 @@
         @endif
 </div>
 
+<script>
+    function calculateClosingStock() {
+        let closing_stock_value = 0;
 
+        $(".closing_stock").each(function () {
+            closing_stock_value += Number($(this).val());
+        });
+
+        $(".closing_stock_value").val(closing_stock_value);
+    }
+
+    function calculateClosingRate() {
+        let closing_rate_value = 0;
+
+        $(".closing_value").each(function () {
+            closing_rate_value += Number($(this).val());
+        });
+    
+        $(".closing_rate_value").val(closing_rate_value);    
+    }
+
+   
+
+
+</script>
 <script>
     $(document).ready(function() {
         $(".sa").click(function(e){
