@@ -1690,6 +1690,10 @@ Route::group(['prefix' => 'sales', 'middleware' => 'mysql2', 'before' => 'csrf']
     Route::get('/clientList', 'SalesController@clientList');
     Route::get('/clientBranchList', 'SalesController@clientBranchList');
 
+    Route::delete("/branch/{id}", "BranchController@destroy")->name("branch.delete");
+    Route::get("/branch/{id}/edit", "BranchController@edit")->name("branch.edit");
+    Route::put("/branch/{id}/edit", "BranchController@update")->name("branch.edit");
+
     Route::get('/invoiceDescList', 'SalesController@invoiceDescList');
 
 
