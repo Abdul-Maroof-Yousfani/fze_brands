@@ -316,16 +316,7 @@ function delete_cate(id) {
 <tr>
     <td class="text-center"><?php echo $counter++; ?></td>
     <td class="text-center"><?php echo $row['region_code']; ?></td>
-    <td class="text-center">
-
-        <?php
-                    if($row->cluster_id >0 ):
-                        $Cluster = CommonHelper::get_single_row('cluster','id',$row->cluster_id);
-                        echo $Cluster->cluster_name;
-                    endif;
-                    ?>
-
-    </td>
+   
     <td class="text-center"><?php echo $row['region_name']; ?></td>
     <td class="text-center">
         <button onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $row->id?>','Edit Region Detail')"

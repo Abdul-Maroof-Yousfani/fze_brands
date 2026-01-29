@@ -37,7 +37,6 @@ if($accType == 'client'){
                                                             <thead>
                                                             <th class="text-center">S.No</th>
                                                             <th class="text-center">Region Code</th>
-                                                            <th class="text-center">Cluster Name</th>
                                                             <th class="text-center">Region Name</th>
                                                             <th class="text-center">Action</th>
 
