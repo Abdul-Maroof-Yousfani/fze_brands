@@ -1058,6 +1058,7 @@ Route::group(['prefix' => 'pdc', 'middleware' => 'mysql2', 'before' => 'csrf'], 
 
     Route::get('/viewCategoryList', 'PurchaseDataCallController@viewCategoryList');
     Route::get('/viewRegionList', 'PurchaseDataCallController@viewRegionList');
+    Route::get('/region/{id}/delete', 'PurchaseAddDetailControler@deleteRegion');
     Route::get('/viewSubItemList', 'PurchaseDataCallController@viewSubItemList');
     Route::post('/viewSubItemListAjax', 'PurchaseDataCallController@viewSubItemListAjax')->name('viewSubItemListAjax');
 

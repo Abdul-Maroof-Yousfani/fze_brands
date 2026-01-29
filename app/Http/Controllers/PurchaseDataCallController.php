@@ -302,7 +302,7 @@ function delete_cate(id) {
         echo $id;
     }
 
-    public function viewRegionList()
+     public function viewRegionList()
     {
         $m = $_GET['m'];
         CommonHelper::companyDatabaseConnection($m);
@@ -316,11 +316,13 @@ function delete_cate(id) {
 <tr>
     <td class="text-center"><?php echo $counter++; ?></td>
     <td class="text-center"><?php echo $row['region_code']; ?></td>
-   
+    
     <td class="text-center"><?php echo $row['region_name']; ?></td>
     <td class="text-center">
         <button onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $row->id?>','Edit Region Detail')"
             type="button" class="btn btn-success btn-sm">EDIT</button>
+        <a href="/pdc/region/<?php echo $row->id ?>/delete"
+        type="button" class="btn btn-danger btn-sm">DELETE</a>
     </td>
 
 </tr>
