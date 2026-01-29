@@ -52,7 +52,6 @@ use Maatwebsite\Excel\Facades\Excel;
 use Mail;
 use Redirect;
 use Session;
-use App\Controllers\Region;
 use Validator;
 
 class PurchaseAddDetailControler extends Controller
@@ -2493,7 +2492,7 @@ class PurchaseAddDetailControler extends Controller
      public function deleteRegion(int $id) {
         $region_id = $id;
 
-        $region = Region::find($region_id);
+        $region = \App\Models\Region::find($region_id);
 
         $region->delete();
 
