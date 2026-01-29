@@ -2489,6 +2489,16 @@ class PurchaseAddDetailControler extends Controller
 
     }
 
+     public function deleteRegion(int $id) {
+        $region_id = $id;
+
+        $region = Region::find($region_id);
+
+        $region->delete();
+
+        return back()->with("message", "Region has been deleted!");
+    }
+
     public function addDirectGrnForm()
     {
 //        echo "<pre>";
