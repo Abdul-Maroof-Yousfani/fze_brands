@@ -52,6 +52,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Mail;
 use Redirect;
 use Session;
+use App\Controllers\Region;
 use Validator;
 
 class PurchaseAddDetailControler extends Controller
