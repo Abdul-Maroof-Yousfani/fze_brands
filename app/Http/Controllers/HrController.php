@@ -14,6 +14,7 @@ use App\Models\FinalSettlement;
 use App\Models\States;
 use Hamcrest\Core\AllOf;
 use Illuminate\Http\Request;
+use App\Models\UOM;
 use App\Models\Department;
 use App\Models\SubDepartment;
 use App\Models\Employee;
@@ -157,6 +158,13 @@ class HrController extends Controller
     {
         $departments = Department::where([['company_id','=',Input::get('m')],['status','=', 1]])->orderBy('id')->get();
         return view('Hr.editSubDepartmentForm',compact('departments'));
+    }
+
+
+    public function editUOM(int $id)
+    {
+        $uom = UOM::find($id);
+        return view('Hr.editUOM',compact('uom'));
     }
 
     public function createDesignationForm()
