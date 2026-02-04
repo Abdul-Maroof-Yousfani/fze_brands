@@ -523,7 +523,7 @@ $Bank = DB::Connection('mysql2')->table('bank_detail')->where('acc_id',$Cusomter
                                                                         <label>Status :</label>
                                                                         <span class="rflabelsteric"></span>
                                                                         <br>
-                                                                        <select name="region_id" class="select2" style="width: 100%;" id="region_id"
+                                                                        <select name="status" class="select2" style="width: 100%;" id="status_id"
                                                                             class="form-control">
                                                                             <option value="">All</option>
                                                                             <option value="1" {{ $Cusomter->status == 1 ? 'selected' : '' }}>Active</option>
