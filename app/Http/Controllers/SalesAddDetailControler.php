@@ -464,7 +464,6 @@ class SalesAddDetailControler extends Controller
         $data2['terms_of_payment']     = Input::get('term') ?? 0;
         $data2["region_id"] = Input::get("region_id") ?? 0;
         $data2["status"] = Input::get("status") ?? 0;
-        // $data2['discount_percent']     = Input::get('discount_percent') ?? 0;
 
         $CustId = DB::table('customers')->insertGetId($data2);
 
