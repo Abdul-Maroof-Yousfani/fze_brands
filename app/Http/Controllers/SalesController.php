@@ -477,7 +477,6 @@ public function exportCustomers(Request $request)
 
     public function uploadCreditCustomer(Request $request)
 {
-    dd("test");
     $file = $request->file('import_file');
     $data = array_map('str_getcsv', file($file->getRealPath()));
 
@@ -534,6 +533,7 @@ public function exportCustomers(Request $request)
             'display_pending_payment_invoice' => $row[32] ?? "",
             'CustomerType' => CommonHelper::get_id_from_db_by_name($row[37], 'customer_types') ?? 0,
             'employee_id' => $row[39] ?? null,
+            'region_id' => Region::where('region_name', $row[45])->value('id'),
             'special_price_mapped' => $row[40] ?? "",
             'warehouse_from' => CommonHelper::get_warehouse_id_by_name($row[41]) ?? null,
             'warehouse_to' => $row[42] ?? null,
