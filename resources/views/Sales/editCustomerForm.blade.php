@@ -244,6 +244,7 @@ $Bank = DB::Connection('mysql2')->table('bank_detail')->where('acc_id',$Cusomter
                                                                             <label> Tax Filer Registered :</label>
                                                                             <span class="rflabelsteric"><strong>*</strong></span>
                                                                             <select onChange="taxFiler(this)" name="tax_filer"
+                                                                            
                                                                                 class="form-control ">
                                                                                 <option value="">Select Option</option>
                                                                                 <option value="yes"
