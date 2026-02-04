@@ -718,6 +718,7 @@ class SalesAddDetailControler extends Controller
                 'date' => date("Y-m-d"),
                 'time' => date("H:i:s"),
                 'action' => 'update',
+                'status' => request()->input("status"),
                 'terms_of_payment' => $request->input('term', $customer->terms_of_payment),
             ];
 
