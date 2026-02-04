@@ -328,6 +328,13 @@ $currentMonthEndDate   = date('Y-m-t');
         }
 
 	</script>
-
+<script>
+    var table = $('#EmployeeList').DataTable({
+        "paging": false,      // pagination disabled
+        "ordering": true,
+        "info": true,
+        "searching": true,
+    });
+</script>
 
 @endsection
