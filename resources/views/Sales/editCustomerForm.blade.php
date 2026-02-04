@@ -787,6 +787,12 @@ $(document).ready(function() {
         width: '100%'
     });
 });
+
+$(document).ready(function() {
+    $('.select2').select2({
+        width: '100%'
+    });
+});
 </script>
 {{-- <script src="{{URL::asset('assets/js/select2/js_tabindex.js') }}"></script> --}}
 @endsection
