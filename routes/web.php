@@ -15,6 +15,7 @@ use App\Models\Branch;
 use App\Models\Stock;
 use App\Models\Subitem;
 use App\User;
+use App\Models\Supplier;
 use Illuminate\Support\Facades\Auth;
 
 Route::auth();
