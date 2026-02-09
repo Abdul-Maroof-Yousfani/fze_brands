@@ -221,6 +221,18 @@ CommonHelper::reconnectMasterDatabase();
                             $pending_grns +
                             $pending_purchase_invoices +
                             $pending_stock_transfers;
+                           dd([
+                                'delivery_notes' => $pending_delivery_notes,
+                                'sale_tax_invoices' => $pending_sale_tax_invoices,
+                                'sale_returns' => $pending_sale_returns,
+                                'purchase_requests' => $pending_purchase_requests,
+                                'purchase_quotations' => $pending_purchase_quotations,
+                                'purchase_orders' => $pending_purchase_orders,
+                                'grns' => $pending_grns,
+                                'purchase_invoices' => $pending_purchase_invoices,
+                                'stock_transfers' => $pending_stock_transfers,
+                                'total_pending' => $total_pending
+                            ]);
                     @endphp
         <ul class="profile-admin d-flex">
 
