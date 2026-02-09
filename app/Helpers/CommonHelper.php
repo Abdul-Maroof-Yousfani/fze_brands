@@ -4228,6 +4228,35 @@ public static function getCustomerAssignedWarehouse($cusId, $itemid)
         return $debit-$credit;
     }
 
+
+     public static function pendingDocuments(
+        $table_name, 
+        $column_name, 
+        $pending_status, 
+        $conditional_column = null, 
+        $conditional_status = null,
+        $is_st_invoice = false
+    ) {
+        $query = DB::connection("mysql2")
+            ->table($table_name)
+            ->where($column_name, $pending_status);
+
+        // Only apply the second condition if both values are provided
+        if ($conditional_column !== null && $conditional_status !== null) {
+            $query->where($conditional_column, $conditional_status);
+        }
+
+        if($is_st_invoice) {
+            $query->where(function($query) {
+                $query->where('sales_tax_invoice.pre_status', '!=', 1)
+                ->orWhereNull('sales_tax_invoice.pre_status');
+            });
+        }
+
+        // Return the actual count (integer), not the query builder
+        return $query->count();
+    }
+
     public static function bill_wise_remaining_amount($supplier_id)
     {
         $purchase_amount=DB::Connection('mysql2')->selectOne('select COALESCE(sum(b.amount),0)amount from new_purchase_voucher a
