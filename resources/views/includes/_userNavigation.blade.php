@@ -65,7 +65,7 @@ endif;
    img.logo_m {
         width: 225px;
     }
-      .dropdown:hover>.dropdown-menu {
+     .dropdown:hover>.dropdown-menu {
         display: block;
         margin-top: 0;
     }
@@ -197,8 +197,7 @@ endif;
               </li>
              
            </ul>
-
-             @php
+           @php
                 $pending_delivery_notes = \App\Helpers\CommonHelper::pendingDocuments("delivery_note", "status", 0);
                 $pending_sale_tax_invoices = \App\Helpers\CommonHelper::pendingDocuments("sales_tax_invoice", "si_status", 1, "status", 1, true);
                 $pending_sale_returns = \App\Helpers\CommonHelper::pendingDocuments("credit_note", "status", 0);
@@ -221,8 +220,15 @@ endif;
             @endphp
            <ul class="profile-admin d-flex">
              
-              <li class="nav-item dropdown dropdown-notification me-25"><a class="nav-link bella" href="#" data-bs-toggle="dropdown"><i class="fa fa-bell" aria-hidden="true"></i><span class="badge rounded-pill bg-danger badge-up">{{ $total_pending }}</span></a>
-                 <ul class="dropdown-menu dropdown-menu-media dropdown-menu-end">
+              
+            <li class="nav-item dropdown dropdown-notification me-25">
+                <a class="nav-link bella" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa fa-bell" aria-hidden="true"></i>
+                    <span
+                        class="badge rounded-pill bg-danger badge-up notification-count">{{ $total_pending }}</span>
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-media dropdown-menu-end">
                     <li class="dropdown-menu-header">
                         <div class="dropdown-header d-flex">
                             <h4 class="notification-title mb-0 me-auto">Notifications</h4>
@@ -299,7 +305,7 @@ endif;
                                 </div>
                             </a>
                         @endif
-                        @if($pending_purchase_invoices > 0)
+                        @if($pending_purchase_orders > 0)
                             <a class="d-flex" href="/store/viewPurchaseRequestList?m={{ request()->m }}&parentCode={{ request()->parentCode }}">
                                 <div class="list-item d-flex align-items-start">
                                     <div class="list-item-body flex-grow-1">
@@ -361,7 +367,7 @@ endif;
                         </a>
                     </li>
                 </ul>
-             </li>
+            </li>
               <li>
                  <div class="pro-user d-flex">
                    
