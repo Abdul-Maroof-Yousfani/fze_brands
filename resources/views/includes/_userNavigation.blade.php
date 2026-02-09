@@ -65,6 +65,10 @@ endif;
    img.logo_m {
         width: 225px;
     }
+      .dropdown:hover>.dropdown-menu {
+        display: block;
+        margin-top: 0;
+    }
 </style>
 
 

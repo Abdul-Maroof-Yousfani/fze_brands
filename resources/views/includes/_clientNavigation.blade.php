@@ -36,6 +36,10 @@ CommonHelper::reconnectMasterDatabase();
     img.logo_m {
         width: 225px;
     }
+      .dropdown:hover>.dropdown-menu {
+        display: block;
+        margin-top: 0;
+    }
 </style>
 @include("select2")
 <div id="mySidenav" class="sidenavnr">
