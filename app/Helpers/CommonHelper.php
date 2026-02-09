@@ -4257,6 +4257,38 @@ public static function getCustomerAssignedWarehouse($cusId, $itemid)
         return $query->count();
     }
 
+    public static function getUnreadNotifications() {
+        $acc_type = auth()->user()->acc_type;
+
+        $notifications = DB::connection("mysql2")
+                                ->table("notification")
+                                ->when($acc_type != "client", function($query) {
+                                    $query->where("user_id", auth()->user()->id);
+                                })
+                                ->orderBy("id", "desc")
+                                ->where("is_read", 0)
+                                ->get();
+
+
+        return $notifications;
+    }
+    public static function countOfUnreadMessages() {
+        $notifications = DB::connection("mysql2")
+                                ->table("notification")
+                                ->where("is_read", 0)
+                                ->when(auth()->user()->acc_type != "client", function($query) {
+                                    $query->where("user_id", auth()->user()->id);
+                                })
+                                ->count();
+
+        return $notifications;
+    }
+    public static function markAsRead($notification_id) {
+        $notification = DB::connection("mysql2")->table("notification")->find($notification_id);
+        $notification->is_read = true;
+        $notification->save();
+    }
+
     public static function bill_wise_remaining_amount($supplier_id)
     {
         $purchase_amount=DB::Connection('mysql2')->selectOne('select COALESCE(sum(b.amount),0)amount from new_purchase_voucher a
