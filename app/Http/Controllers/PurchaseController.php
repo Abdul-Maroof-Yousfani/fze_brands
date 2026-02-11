@@ -550,11 +550,17 @@ class PurchaseController extends Controller
     }
 
     public function viewDemandList(){
+            $type = request()->type;
+      
         $demand_detail= DB::Connection('mysql2')->table('demand')
                         ->leftJoin("demand_data", "demand.id", "=", "demand_data.master_id")
                         ->leftJoin("subitem", "subitem.id", "=", "demand_data.sub_item_id")
                         ->select("demand.id", "demand.status", "demand.demand_date", "demand_data.sub_item_id", "subitem.username")
                         ->where("demand.status", "!=", "0")
+                        ->when($type == 'pending', function($query) {
+                            $query->where("demand.demand_status", 1);
+                        })
+           
                         ->groupBy("subitem.username")
                         ->get();
         return view('Purchase.viewDemandList', compact("demand_detail"));

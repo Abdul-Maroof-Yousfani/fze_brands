@@ -1874,12 +1874,18 @@ public function uploadProduct(Request $request)
     {
         $delivery_note = new DeliveryNote();
         $delivery_note = $delivery_note->SetConnection('mysql2');
+        $type = request()->type;
+      
         // where('status',1)->
         $territory_ids = json_decode(auth()->user()->territory_id); 
         $delivery_note = $delivery_note
                                 ->whereHas("customer", function($query) use ($territory_ids) {
                                     $query->whereIn("territory_id", $territory_ids);
                                 })
+                                ->when($type, function($query) {
+                                    $query->where("status", 0);
+                                })
+                
                                 ->orderBy('id', 'DESC')
                                 ->get();
                                 
@@ -2382,7 +2388,9 @@ public function getDeliveryNoteDefaultData(Request $request)
         $sales_tax_invoice = new SalesTaxInvoice();
         $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2');            
         $user = auth()->user();
-        $territory_ids = json_decode($user->territory_id);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+        $territory_ids = json_decode($user->territory_id);    
+           $type = request()->type;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
        
         $sales_tax_invoice = $sales_tax_invoice
             ->join('customers', 'customers.id', '=', 'sales_tax_invoice.buyers_id')
@@ -2392,6 +2400,10 @@ public function getDeliveryNoteDefaultData(Request $request)
                 $q->where('sales_tax_invoice.pre_status', '!=', 1)
                 ->orWhereNull('sales_tax_invoice.pre_status');
             })
+              ->when($type == 'pending', function($query) {
+                $query->where("si_status", 1);
+            })
+          
             ->select('sales_tax_invoice.*', 'customers.territory_id') // only territory_id from customers
             ->get();
 
@@ -2705,11 +2717,19 @@ if (in_array($user->acc_type, ['user'])) {
     {
         $currentMonthStartDate = date('Y-m-01');
         $currentMonthEndDate   = date('Y-m-t');
+        $type = request()->type;
+
 
         $credit_note = new CreditNote();
         $credit_note = $credit_note->SetConnection('mysql2');
-        $credit_note = $credit_note->where('status', 1)->whereBetween('cr_date', [$currentMonthStartDate, $currentMonthEndDate])->orderBy('id', 'DESC')->get();
-        return view('Sales.viewCustomerCreditNoteList', compact('credit_note'));
+        $credit_note = $credit_note
+                            ->where('status', 1)
+                            ->when($type == 'pending', function($query) {
+                                $query->where("status", 0);
+                            })
+                            ->whereBetween('cr_date', [$currentMonthStartDate, $currentMonthEndDate])
+                            ->orderBy('id', 'DESC')->get();
+          return view('Sales.viewCustomerCreditNoteList', compact('credit_note'));
     }
     public function viewCustomer(Request $request)
     {
