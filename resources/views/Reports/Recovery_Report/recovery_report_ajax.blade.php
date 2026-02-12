@@ -90,6 +90,7 @@
                     $outstanding = $inv_amount - $data->receipt_amount;
                     $bucket180 = 0; $bucket90 = 0; $bucket46 = 0; $bucket45 = 0;
                     
+                    $date = null;
                     if($outstanding > 0 && !empty($data->invoice_date) && $data->invoice_date != "0000-00-00") {
                         $date = \Carbon\Carbon::parse($data->invoice_date)->startOfDay();
                         $today = \Carbon\Carbon::today();
@@ -126,7 +127,7 @@
                     <td>SI</td>
                     <td>{{ $data->gi_no }}</td>
                     <td>{{ $data->brand_id ? \App\Helpers\CommonHelper::get_brand_by_id($data->brand_id) : "N/A" }}</td>
-                    <td>{{ $date->format("d-M-y") }}</td>
+                    <td>{{ $date?->format("d-M-y") ?? '-' }}</td>
                     <td>{{ $data->sales_person ?? "N/A" }}</td>
                     <td>{{ number_format($inv_amount, 2) }}</td>
                     <td class="receipt-nos">{{ $data->rv_numbers ?: "-" }}</td>
