@@ -127,7 +127,7 @@
                     <td>SI</td>
                     <td>{{ $data->gi_no }}</td>
                     <td>{{ $data->brand_id ? \App\Helpers\CommonHelper::get_brand_by_id($data->brand_id) : "N/A" }}</td>
-                    <td>{{ $date?->format("d-M-y") ?? '-' }}</td>
+                    <td>{{ optional($date)->format('d-M-y') ?? '-' }}</td>
                     <td>{{ $data->sales_person ?? "N/A" }}</td>
                     <td>{{ number_format($inv_amount, 2) }}</td>
                     <td class="receipt-nos">{{ $data->rv_numbers ?: "-" }}</td>
