@@ -237,8 +237,6 @@ class StoreDataCallController extends Controller
         $toDate = $_GET['toDate'];
         $m = $_GET['m'];
         $type = $_GET['type'] ?? null;
-        $type = $_GET['type'];
-    
         $selectVoucherStatus = $_GET['selectVoucherStatus'];
         $selectSubDepartment = $_GET['selectSubDepartment'];
         $selectSubDepartmentId = $_GET['selectSubDepartmentId'];
@@ -270,7 +268,6 @@ class StoreDataCallController extends Controller
                                 ->when($type == 'pending', function($query) {
                                     $query->where("purchase_request_status", 1);
                                 });
-   
          if(!empty($search)){
             $purchaseRequestDetail = $purchaseRequestDetail->whereRaw('LOWER(subitem.product_name) LIKE ?', ['%'.strtolower($search).'%'])
                                     ->orWhereRaw('LOWER(subitem.sku_code) LIKE ?',['%'.strtolower($search).'%'])
@@ -337,6 +334,7 @@ class StoreDataCallController extends Controller
             $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','2')->where('demand_type','=','1')->where('supplier_id','=',$selectSupplierId)->where('sub_department_id','=',$selectSubDepartmentId)->where('purchase_request_status','!=','4')->get();
         }
         CommonHelper::reconnectMasterDatabase();
+    
         return view('Store.AjaxPages.filterPurchaseRequestVoucherList',compact('purchaseRequestDetail'));
     }
 
