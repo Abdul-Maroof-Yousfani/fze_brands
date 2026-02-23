@@ -31,10 +31,10 @@ $currentMonthEndDate   = date('Y-m-t');
           <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="well">
             
-              <input type="hidden" value="{{ request()->type }}" name="type" id="type" />
-  
+          
+    <input type="hidden" value="{{ request()->type }}" name="type" id="type" />
 
-              <div class="row align-items-base ">
+            <div class="row align-items-base ">
                 <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                   <label>From Date</label>
                   <input
@@ -97,6 +97,7 @@ $currentMonthEndDate   = date('Y-m-t');
                                   <th class="text-center">Vendor</th>
                                   <th class="text-center">Ref No</th>
                                   <th class="text-center">Total Amount</th>
+                                  <th class="text-center">Status</th>
                                   <th class="text-center hidden-print">
                                     Action
                                   </th>
