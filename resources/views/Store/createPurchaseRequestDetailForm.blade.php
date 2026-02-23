@@ -790,7 +790,7 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
     });
 
 
-    function claculation(number) {
+    function claculatiodnbk(number) {
 
         var qty = $('#purchase_approve_qty_' + number).val();
         var rate = $('#rate_' + number).val();
@@ -807,6 +807,7 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
             amount += +$('#after_dis_amountt_' + count).val();
             count++;
         });
+
         amount = parseFloat(amount);
 
 

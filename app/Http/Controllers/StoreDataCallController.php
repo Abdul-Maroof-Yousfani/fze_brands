@@ -236,6 +236,7 @@ class StoreDataCallController extends Controller
         $fromDate = $_GET['fromDate'];
         $toDate = $_GET['toDate'];
         $m = $_GET['m'];
+        $type = $_GET['type'] ?? null;
         $type = $_GET['type'];
     
         $selectVoucherStatus = $_GET['selectVoucherStatus'];
