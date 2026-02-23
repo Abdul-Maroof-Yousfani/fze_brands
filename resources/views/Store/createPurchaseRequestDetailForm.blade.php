@@ -89,9 +89,13 @@ var counter = 1;
 
                  $implodedVoucherNos = implode(',', $voucherNos);
 
+$comparativeNumbers = [];
+
 foreach($data as $row){
     $comparativeNumbers[] = $row->comparative_number;
 }
+
+$comparativeNumbers = array_unique($comparativeNumbers);
 
 //                $quotation = DB::connection('mysql2')
 //     ->table('quotation_data as qd')
@@ -1119,8 +1123,8 @@ $(document).ready(function () {
     let firstCurrency = $("#curren option:eq(1)");
     if (firstCurrency.length) {
         firstCurrency.prop("selected", true);
-        claculation(1);
-        get_rate();
+        // claculation(1);
+        // get_rate();
     }
 });
 
