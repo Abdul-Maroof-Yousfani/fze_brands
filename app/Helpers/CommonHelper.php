@@ -2047,7 +2047,14 @@ public static function getSubItemByBrand($id, $item_id = null)
                             ->get();
         return $sub_item;
     }
-    
+    public static function get_tax_rate($PoDataId)
+    {
+
+        $PurchaseRequestData = new PurchaseRequestData();
+        $PurchaseRequestData = $PurchaseRequestData->SetConnection('mysql2');
+        $Rate = $PurchaseRequestData->where('id', $PoDataId)->select('tax_rate')->first();
+        return $Rate;
+    }
     public static function get_all_subitem()
     {
 
