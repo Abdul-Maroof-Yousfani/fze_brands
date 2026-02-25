@@ -22,12 +22,14 @@ if(empty($paramOne)){
                 <?php
              
                
+             
              $data= DB::Connection('mysql2')->table('quotation_data as a')
              ->join('demand_data as b','a.pr_data_id','=','b.id')
              ->join('quotation as c','a.master_id','=','c.id')
              ->join('demand as d','b.master_id','=','d.id')
              ->where('a.status',1)
              ->where('b.status',1)
+             ->where('a.quotation_status', '!=',2)
              ->where('c.quotation_status',2)
              ->select('b.id','b.sub_item_id','c.comparative_number','c.voucher_no as quotation_no','d.demand_no','d.demand_date','a.vendor','b.qty','c.dept_id')
              ->orderBy('vendor')
