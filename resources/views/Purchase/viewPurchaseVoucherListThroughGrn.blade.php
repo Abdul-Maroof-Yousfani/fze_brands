@@ -92,7 +92,7 @@ $edit = false;
                                 <?php endforeach;?>
                             </select>
                         </div>
-                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                 <label for="">Goods Receipt Note <input type="radio" name="VoucherType"  class="form-control" checked value="1"></label>
                             </div>
@@ -165,7 +165,7 @@ $edit = false;
                                                             @if($row->grn_no == 0)
                                                             
                                                                     <button
-                                                                        onclick="showDetailModelOneParamerter('fdc/viewDirectPurchaseVoucherDetail','<?php echo $row->id ?>','View Purchase Voucher','<?php echo $m?>')"
+                                                                        onclick="showDetailModelOneParamerter('fdc/viewDirectPurchaseVoucherDetail','<?php echo $row->id ?>','View Purchase Invoice','<?php echo $m?>')"
                                                                         type="button" class="btn btn-success btn-xs">View
                                                                     </button>
                                                             @else
