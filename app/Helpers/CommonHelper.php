@@ -2055,6 +2055,13 @@ public static function getSubItemByBrand($id, $item_id = null)
         $Rate = $PurchaseRequestData->where('id', $PoDataId)->select('tax_rate')->first();
         return $Rate;
     }
+    public static function get_goodreciptnotedata_child($id)
+    {
+        $grn_data = new \App\Models\GRNData();
+        $grn_data = $grn_data->SetConnection('mysql2');
+        return $grn_data->where('id', $id)->first();
+    }
+    
     public static function get_all_subitem()
     {
 

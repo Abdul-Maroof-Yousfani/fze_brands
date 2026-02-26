@@ -2475,8 +2475,10 @@ public function importData(Request $request)
 		$NewPurchaseVoucherData = $NewPurchaseVoucherData->SetConnection('mysql2');
 		$NewPurchaseVoucherData = $NewPurchaseVoucherData->where('master_id',$id)->Orderby('id','ASC')->get();
 		$CountId = $NewPurchaseVoucherData->where('master_id',$id)->where('sub_item','!=','')->count();
+		
+		$ids = [$NewPurchaseVoucher->grn_id];
 
-		return view('Finance.editPurchaseVoucherFormNew',compact('supplier','department','id','NewPurchaseVoucher','NewPurchaseVoucherData','CountId'));
+		return view('Finance.editPurchaseVoucherFormNew',compact('supplier','department','id','NewPurchaseVoucher','NewPurchaseVoucherData','CountId','ids'));
 	}
 	public function editDirectPurchaseVoucherForm($id)
 	{
