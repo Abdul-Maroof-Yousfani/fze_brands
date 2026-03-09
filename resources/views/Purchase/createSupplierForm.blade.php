@@ -51,7 +51,7 @@ if($accType == 'client'){
 
                                                     <input type="hidden" name="account_head" value="2-281" />
                                                     <select onchange="get_nature_type()" 
-                                                        id="account_id" class="form-control requiredField select2" disabled>
+                                                        id="account_id" class="form-control requiredField select2">
 
 
                                                         <option value="">Select Account</option>
