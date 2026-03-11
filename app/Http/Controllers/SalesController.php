@@ -979,7 +979,7 @@ public function uploadProduct(Request $request)
             throw new \Exception('Could not read the uploaded file');
         }
 
-        // Use fgetcsv to safely parse CSV data
+        // Parse CSV
         $csv = fopen($filePath, 'r');
         $data = [];
         while (($row = fgetcsv($csv)) !== false) {
@@ -987,7 +987,6 @@ public function uploadProduct(Request $request)
         }
         fclose($csv);
 
-        // Check if file has data beyond header
         if (count($data) <= 1) {
             throw new \Exception('The CSV file is empty or contains only headers');
         }
@@ -999,51 +998,52 @@ public function uploadProduct(Request $request)
         $errors = [];
 
         foreach ($data as $key => $row) {
-            if ($key == 0) continue; // skip header
+            if ($key == 0) continue;
 
             $row = array_pad($row, 33, null);
             $product_name = trim($row[3]);
             $brand_name = trim($row[8]);
+            $sku_code = !empty($row[2]) ? trim($row[2]) : null;
 
-            // Get brand_id from brands table
+            // ✅ SIRF YEH FIELDS TRULY REQUIRED HAIN
+            $required_fields = [
+                'sku_code' => $row[2] ?? null,
+                'product_name' => $product_name,
+                'brand_name' => $brand_name,
+                'uom' => $row[5] ?? null,
+                'product_barcode' => $row[7] ?? null,
+                'product_status' => $row[31] ?? null,
+            ];
+
+            $missing_fields = [];
+            foreach ($required_fields as $field_name => $field_value) {
+                if (empty($field_value)) {
+                    $missing_fields[] = $field_name;
+                }
+            }
+
+            if (!empty($missing_fields)) {
+                $skippedRows++;
+                $errors[] = "Row " . ($key + 1) . ": Missing required fields - " . implode(", ", $missing_fields);
+                continue;
+            }
+
+            // Get brand_id (required)
             $brand_id = 0;
             if (!empty($brand_name)) {
                 $brand = DB::connection('mysql2')->table('brands')
                     ->whereRaw("CONVERT(`name` USING utf8mb4) COLLATE utf8mb4_unicode_ci = ?", [$brand_name])
                     ->first();
                 $brand_id = $brand ? $brand->id : 0;
-            }
-            
-            $sku_code = !empty($row[2]) ? trim($row[2]) : null;
-
-            // Validate required fields and collect specific errors
-            $rowErrors = [];
-            if(empty($row[2])) $rowErrors[] = "SKU Code is missing";
-            if(!$product_name) $rowErrors[] = "Product Name is missing";
-            if(empty($row[4])) $rowErrors[] = "Product Description is missing";
-            if(empty($row[5])) $rowErrors[] = "UOM is missing";
-            if(empty($row[7])) $rowErrors[] = "Product Barcode is missing";
-            if(!$brand_id) $rowErrors[] = "Brand is missing or invalid";
-            if(empty($row[9])) $rowErrors[] = "Group ID is missing";
-            if(empty($row[10])) $rowErrors[] = "Main IC ID is missing";
-            if(empty($row[11])) $rowErrors[] = "Sub Category ID is missing";
-            if(empty($row[12])) $rowErrors[] = "Product Classification ID is missing";
-            if(empty($row[13])) $rowErrors[] = "Product Type ID is missing";
-            if(empty($row[14])) $rowErrors[] = "Product Trend ID is missing";
-            if(empty($row[15])) $rowErrors[] = "Purchase Price is missing";
-            if(empty($row[16])) $rowErrors[] = "Sale Price is missing";
-            if(empty($row[17])) $rowErrors[] = "MRP Price is missing";
-            if(empty($row[18])) $rowErrors[] = "Is Tax Apply is missing";
-            if(empty($row[20])) $rowErrors[] = "Tax Applied On is missing";
-            if(empty($row[22])) $rowErrors[] = "Tax is missing";
-            if(empty($row[31])) $rowErrors[] = "Product Status is missing";
-
-            if (!empty($rowErrors)) {
-                $skippedRows++;
-                $errors[] = "Row " . ($key + 1) . ": " . implode(", ", $rowErrors);
-                continue;
+                
+                if ($brand_id == 0) {
+                    $skippedRows++;
+                    $errors[] = "Row " . ($key + 1) . ": Brand '{$brand_name}' not found in database";
+                    continue;
+                }
             }
 
+            // ✅ BAQI SARI FIELDS OPTIONAL HAIN - Inki validation nahi karni
             $productData = [
                 'sku_code' => $sku_code,
                 'product_name' => $product_name,
@@ -1063,12 +1063,7 @@ public function uploadProduct(Request $request)
                 'mrp_price' => !empty($row[17]) ? (float) str_replace(',', '', trim($row[17])) : 0,
                 'is_tax_apply' => !empty($row[18]) && strtolower(trim($row[18])) === 'yes' ? 1 : 0,
                 'tax_type_id' => !empty($row[19]) 
-                    ? (strtolower(trim($row[19])) === 'include in' 
-                        ? 1 
-                        : (strtolower(trim($row[19])) === 'tax on' 
-                            ? 2 
-                            : 0)
-                    ) 
+                    ? (strtolower(trim($row[19])) === 'include in' ? 1 : (strtolower(trim($row[19])) === 'tax on' ? 2 : 0)) 
                     : 0,
                 'tax_applied_on' => !empty($row[20]) ? trim($row[20]) : null,
                 'tax_policy' => !empty($row[21]) ? trim($row[21]) : null,
@@ -1087,17 +1082,19 @@ public function uploadProduct(Request $request)
                 'date' => date('Y-m-d'),
             ];
 
-            // Check for existing product
+            // Check for existing product by SKU
             $existingProduct = DB::connection('mysql2')->table('subitem')
                 ->where('sku_code', $sku_code)
                 ->first();
 
             if ($existingProduct) {
+                // Update existing product
                 DB::connection('mysql2')->table('subitem')
                     ->where('id', $existingProduct->id)
                     ->update($productData);
                 $updatedCount++;
             } else {
+                // Insert new product
                 $productData['sys_no'] = CommonHelper::generateUniqueNumber('ITEM-', 'subitem', 'sys_no');
                 $insertData[] = $productData;
                 $insertedCount++;
@@ -1114,7 +1111,6 @@ public function uploadProduct(Request $request)
             DB::connection('mysql2')->table('subitem')->insert($insertData);
         }
 
-        // Check if any records were actually processed
         $totalProcessed = $insertedCount + $updatedCount;
         
         if ($totalProcessed === 0) {
@@ -1122,12 +1118,10 @@ public function uploadProduct(Request $request)
             
             $errorMessage = "No products were uploaded. ";
             if ($skippedRows > 0) {
-                $errorMessage .= "{$skippedRows} rows were skipped due to validation errors.";
+                $errorMessage .= "{$skippedRows} rows were skipped due to missing required fields.";
                 if (!empty($errors)) {
-                    $errorMessage .= " First few errors: " . implode("; ", array_slice($errors, 0, 5));
+                    $errorMessage .= " Errors: " . implode("; ", array_slice($errors, 0, 5));
                 }
-            } else {
-                $errorMessage .= "The file might be empty or contain only headers.";
             }
             
             return redirect()->back()->with('error', $errorMessage);
@@ -1137,7 +1131,7 @@ public function uploadProduct(Request $request)
 
         $message = "Products uploaded successfully: {$insertedCount} inserted, {$updatedCount} updated";
         if ($skippedRows > 0) {
-            $message .= ", {$skippedRows} rows skipped due to missing required fields.";
+            $message .= ", {$skippedRows} rows skipped (missing required fields)";
         }
 
         return redirect()->back()->with([
