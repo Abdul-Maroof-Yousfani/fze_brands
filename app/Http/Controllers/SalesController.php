@@ -1008,7 +1008,7 @@ public function uploadProduct(Request $request)
             }
           $sku_code = !empty($row[2]) ? trim($row[2]) : null;
 
-             if(empty($row[2])) {
+            if(empty($row[2])) {
                 continue;
             }
             if(!$product_name) {
@@ -1132,7 +1132,7 @@ public function uploadProduct(Request $request)
 
                 $existingProduct = DB::connection('mysql2')->table('subitem')
                 ->where('sku_code', $sku_code)
-                //->where('brand_id', $brand_id)
+                // ->where('brand_id', $brand_id)
                 ->first();
 
 
