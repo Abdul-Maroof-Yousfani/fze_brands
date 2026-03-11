@@ -957,16 +957,16 @@ ini_set('memory_limit', '512M');
 //         return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
 //     }
 // }
-
 public function uploadProduct(Request $request)
 {
     ini_set('max_execution_time', 300);
     ini_set('memory_limit', '512M');
-    DB::connection('mysql2')->beginTransaction();
-
+    
     $request->validate([
-    'import_file' => 'required|file|mimetypes:text/plain,text/csv|max:2048',
-]);
+        'import_file' => 'required|file|mimetypes:text/plain,text/csv|max:2048',
+    ]);
+
+    DB::connection('mysql2')->beginTransaction();
 
     try {
         $file = $request->file('import_file');
@@ -987,9 +987,16 @@ public function uploadProduct(Request $request)
         }
         fclose($csv);
 
+        // Check if file has data beyond header
+        if (count($data) <= 1) {
+            throw new \Exception('The CSV file is empty or contains only headers');
+        }
+
         $insertData = [];
         $updatedCount = 0;
         $insertedCount = 0;
+        $skippedRows = 0;
+        $errors = [];
 
         foreach ($data as $key => $row) {
             if ($key == 0) continue; // skip header
@@ -1006,79 +1013,39 @@ public function uploadProduct(Request $request)
                     ->first();
                 $brand_id = $brand ? $brand->id : 0;
             }
-          $sku_code = !empty($row[2]) ? trim($row[2]) : null;
+            
+            $sku_code = !empty($row[2]) ? trim($row[2]) : null;
 
-            if(empty($row[2])) {
-                continue;
-            }
-            if(!$product_name) {
-                continue;
-            }
-            if(empty($row[4])) {
-                continue;
-            }
-            if(empty($row[5])) {
-                continue;   
-            }
-            if(empty($row[7]))  {
-                continue;
-            }
-            if(!$brand_id) {
-                continue;
-            }
-            if(empty($row[9])) {
-                continue;
-            }
+            // Validate required fields and collect specific errors
+            $rowErrors = [];
+            if(empty($row[2])) $rowErrors[] = "SKU Code is missing";
+            if(!$product_name) $rowErrors[] = "Product Name is missing";
+            if(empty($row[4])) $rowErrors[] = "Product Description is missing";
+            if(empty($row[5])) $rowErrors[] = "UOM is missing";
+            if(empty($row[7])) $rowErrors[] = "Product Barcode is missing";
+            if(!$brand_id) $rowErrors[] = "Brand is missing or invalid";
+            if(empty($row[9])) $rowErrors[] = "Group ID is missing";
+            if(empty($row[10])) $rowErrors[] = "Main IC ID is missing";
+            if(empty($row[11])) $rowErrors[] = "Sub Category ID is missing";
+            if(empty($row[12])) $rowErrors[] = "Product Classification ID is missing";
+            if(empty($row[13])) $rowErrors[] = "Product Type ID is missing";
+            if(empty($row[14])) $rowErrors[] = "Product Trend ID is missing";
+            if(empty($row[15])) $rowErrors[] = "Purchase Price is missing";
+            if(empty($row[16])) $rowErrors[] = "Sale Price is missing";
+            if(empty($row[17])) $rowErrors[] = "MRP Price is missing";
+            if(empty($row[18])) $rowErrors[] = "Is Tax Apply is missing";
+            if(empty($row[20])) $rowErrors[] = "Tax Applied On is missing";
+            if(empty($row[22])) $rowErrors[] = "Tax is missing";
+            if(empty($row[31])) $rowErrors[] = "Product Status is missing";
 
-            if(empty($row[10])) {
-                continue;
-            }
-
-            if(empty($row[11])) {
-                continue;
-            }
-
-            if(empty($row[12])) {
-                continue;
-            }
-
-            if(empty($row[13])) {
-                continue;
-            }
-
-            if(empty($row[14])) {
-                continue;
-            }
-
-            if(empty($row[15])) {
-                continue;
-            }
-
-            if(empty($row[16])) {
-                continue;
-            }
-
-            if(empty($row[17])) {
-                continue;
-            }
-
-            if(empty($row[18])) {
-                continue;
-            }
-
-            if(empty($row[20])) {
-                continue;
-            }
-            if(empty($row[22])) {
-                continue;
-            }
-
-            if(empty($row[31])) {
+            if (!empty($rowErrors)) {
+                $skippedRows++;
+                $errors[] = "Row " . ($key + 1) . ": " . implode(", ", $rowErrors);
                 continue;
             }
 
             $productData = [
-                'sku_code' => !empty($row[2]) ? trim($row[2]) : null,
+                'sku_code' => $sku_code,
                 'product_name' => $product_name,
                 'product_description' => !empty($row[4]) ? trim($row[4]) : null,
                 'uom' => !empty($row[5]) ? CommonHelper::get_id_from_db_by_name_for_product(trim($row[5]), 'uom') : 0,
@@ -1095,24 +1062,21 @@ public function uploadProduct(Request $request)
                 'sale_price' => !empty($row[16]) ? (float) str_replace(',', '', trim($row[16])) : 0,
                 'mrp_price' => !empty($row[17]) ? (float) str_replace(',', '', trim($row[17])) : 0,
                 'is_tax_apply' => !empty($row[18]) && strtolower(trim($row[18])) === 'yes' ? 1 : 0,
-                    'tax_type_id' => !empty($row[19]) 
-                        ? (strtolower(trim($row[19])) === 'include in' 
-                            ? 1 
-                            : (strtolower(trim($row[19])) === 'tax on' 
-                                ? 2 
-                                : 0)
-                        ) 
-                        : 0,
-
-                // 'tax_type_id' => !empty($row[19]) ? CommonHelper::get_id_from_db_by_name_for_product(trim($row[19]), 'tax_types') : 0,
+                'tax_type_id' => !empty($row[19]) 
+                    ? (strtolower(trim($row[19])) === 'include in' 
+                        ? 1 
+                        : (strtolower(trim($row[19])) === 'tax on' 
+                            ? 2 
+                            : 0)
+                    ) 
+                    : 0,
                 'tax_applied_on' => !empty($row[20]) ? trim($row[20]) : null,
                 'tax_policy' => !empty($row[21]) ? trim($row[21]) : null,
                 'tax' => !empty($row[22]) ? (float) str_replace(',', '', trim($row[22])) : null,
                 'flat_discount' => !empty($row[23]) ? (float) str_replace(',', '', trim($row[23])) : 0,
                 'min_qty' => !empty($row[24]) ? (int) trim($row[24]) : 0,
                 'max_qty' => !empty($row[25]) ? (int) trim($row[25]) : 0,
-                  'hs_code' => !empty($row[27]) ? trim($row[27]): 0,
-                // 'hs_code' => !empty($row[27]) ? CommonHelper::get_id_from_db_by_name_for_product(trim($row[27]), 'hs_codes') : 0,
+                'hs_code' => !empty($row[27]) ? trim($row[27]): 0,
                 'locality' => !empty($row[28]) ? trim($row[28]) : null,
                 'origin' => !empty($row[29]) ? trim($row[29]) : null,
                 'color' => !empty($row[30]) ? trim($row[30]) : null,
@@ -1123,18 +1087,10 @@ public function uploadProduct(Request $request)
                 'date' => date('Y-m-d'),
             ];
 
-            // Collation-safe check for existing product
-            // $existingProduct = DB::connection('mysql2')->table('subitem')
-            //     ->whereRaw("CONVERT(`product_name` USING utf8mb4) COLLATE utf8mb4_unicode_ci = ?", [$product_name])
-            //     ->where('brand_id', $brand_id)
-            //     ->first();
-
-
-                $existingProduct = DB::connection('mysql2')->table('subitem')
+            // Check for existing product
+            $existingProduct = DB::connection('mysql2')->table('subitem')
                 ->where('sku_code', $sku_code)
-                // ->where('brand_id', $brand_id)
                 ->first();
-
 
             if ($existingProduct) {
                 DB::connection('mysql2')->table('subitem')
@@ -1153,22 +1109,47 @@ public function uploadProduct(Request $request)
             }
         }
 
+        // Insert remaining records
         if (!empty($insertData)) {
             DB::connection('mysql2')->table('subitem')->insert($insertData);
         }
 
+        // Check if any records were actually processed
+        $totalProcessed = $insertedCount + $updatedCount;
+        
+        if ($totalProcessed === 0) {
+            DB::connection('mysql2')->rollBack();
+            
+            $errorMessage = "No products were uploaded. ";
+            if ($skippedRows > 0) {
+                $errorMessage .= "{$skippedRows} rows were skipped due to validation errors.";
+                if (!empty($errors)) {
+                    $errorMessage .= " First few errors: " . implode("; ", array_slice($errors, 0, 5));
+                }
+            } else {
+                $errorMessage .= "The file might be empty or contain only headers.";
+            }
+            
+            return redirect()->back()->with('error', $errorMessage);
+        }
+
         DB::connection('mysql2')->commit();
 
+        $message = "Products uploaded successfully: {$insertedCount} inserted, {$updatedCount} updated";
+        if ($skippedRows > 0) {
+            $message .= ", {$skippedRows} rows skipped due to missing required fields.";
+        }
+
         return redirect()->back()->with([
-            'success' => 'Products uploaded successfully',
-            'stats' => "Inserted: {$insertedCount}, Updated: {$updatedCount}"
+            'success' => $message,
+            'stats' => "Inserted: {$insertedCount}, Updated: {$updatedCount}, Skipped: {$skippedRows}"
         ]);
+
     } catch (\Exception $e) {
         DB::connection('mysql2')->rollBack();
         return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
     }
 }
-
 
 
 
