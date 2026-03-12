@@ -426,9 +426,37 @@ endif;
         // });
 
 
-        // TAB key to add new row from last editable field - IMPROVED VERSION
+        // TAB key to jump from Actual Qty to next row's Item
+$(document).on('keydown', '.ActualQty', function(e) {
+    if (e.key === "Tab" && !e.shiftKey) { // Only Tab, not Shift+Tab
+        e.preventDefault();
+        
+        let $currentRow = $(this).closest('tr');
+        let $nextRow = $currentRow.next('.main');
+        
+        if ($nextRow.length) {
+            // Go to next existing row's product
+            $nextRow.find('select.product-select').select2('focus');
+            $nextRow.find('select.product-select').select2('open');
+        } else {
+            // Last row, add new row and focus on its product
+            AddMoreDetails();
+            setTimeout(() => {
+                let $newRow = $('#AppnedHtml tr.main:last');
+                $newRow.find('select.product-select').select2('focus');
+                $newRow.find('select.product-select').select2('open');
+            }, 300);
+        }
+    }
+});
+
+// TAB key to add new row from last editable field - IMPROVED VERSION
 $(document).on('keydown', 'input, select', function(e) {
     if (e.key === "Tab" && !e.shiftKey) { // Only Tab, not Shift+Tab
+        
+        // Skip if this is ActualQty as it's handled above
+        if($(this).hasClass('ActualQty')) return;
+
         // Get all editable fields in the current table only
         let $currentTable = $(this).closest('table');
         let $inputs = $currentTable.find('input:enabled:not([readonly]), select:enabled:not([readonly])').filter(':visible');
