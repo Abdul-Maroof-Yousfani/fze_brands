@@ -323,7 +323,9 @@ endif;
                                             </tbody>
                                             <tbody>
                                                 <tr style="font-size:large;font-weight: bold">
-                                                    <td class="text-center" colspan="9">Total</td>
+                                                    <td class="text-center" colspan="7">Total</td>
+                                                    <td class="text-right" colspan="1"><input readonly class="form-control" type="text" id="total_qty" value="{{ $purchaseDetails->sum('purchase_request_qty') }}"/> </td>
+                                                    <td class="text-right" colspan="1"><input readonly class="form-control" type="text" id="total_rate" value="{{ $purchaseDetails->sum('rate') }}"/> </td>
                                                     <td class="text-right" colspan="1"><input readonly class="form-control" type="text" id="actual_net" value="{{ $purchaseDetails->sum('actual_amount') }}"/> </td>
                                                     <td class="text-right" colspan="1"><input readonly class="form-control" type="text" id="net" value="{{ $purchaseDetails->sum('amount') }}"/> </td>
                                                     <td colspan="4"></td>
@@ -724,6 +726,15 @@ function AddMoreDetails() {
             var amount = 0;
             var actual_amount = 0;
             var total_net = 0;
+            var total_qty = 0;
+            var total_rate = 0;
+
+            $('.ActualQty').each(function() {
+                total_qty += parseFloat($(this).val()) || 0;
+            });
+            $('.ActualRate').each(function() {
+                total_rate += parseFloat($(this).val()) || 0;
+            });
 
             $('.net_amount_dis').each(function() {
                 total_net += parseFloat($(this).val()) || 0;
@@ -739,6 +750,8 @@ function AddMoreDetails() {
                 amount += (qty * rate * currency);
             });
 
+            $('#total_qty').val(total_qty.toFixed(2));
+            $('#total_rate').val(total_rate.toFixed(2));
             $('#net').val(amount.toFixed(2));
             $('#actual_net').val(actual_amount.toFixed(2));
             $('#total_net').val(total_net.toFixed(2));
