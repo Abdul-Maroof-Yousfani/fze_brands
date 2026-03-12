@@ -96,18 +96,47 @@ endif;
                                                 value="{{ $purchaseRequest->destination }}" />
                                         </div>
                                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                            <label class="sf-label">Department</label>
+                                            <input type="text" class="form-control" name="department" id="department"
+                                                value="{{ $purchaseRequest->department ?? '' }}" />
+                                        </div>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                            <label class="sf-label">Supplier Type <span class="rflabelsteric"><strong>*</strong></span></label>
+                                            <select class="form-control requiredField" name="p_type" id="p_type">
+                                                @foreach(\App\Helpers\CommonHelper::get_types() as $item)
+                                                    <option value="{{ $item->id }}" {{$purchaseRequest->p_type == $item->id ? 'selected' : ''}}>
+                                                        {{ $item->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                             <label class="sf-label">Vendor<strong>*</strong></label>
                                             <select onchange="get_address(); get_discount();" name="supplier_id"
                                                 id="supplier_id" class="form-control requiredField select2">
                                                 <option value="">Select Vendor</option>
-                                                <!-- Will be populated via AJAX on po_type_change -->
+                                                @foreach($suppliers as $supplier)
+                                                    <option value="{{ $supplier->id }}" data-items="{{ $supplierAddresses[$supplier->id] }}" {{ $purchaseRequest->supplier_id == $supplier->id ? 'selected' : '' }}>
+                                                        {{ ucwords($supplier->name) }}
+                                                    </option>
+                                                @endforeach
                                             </select>
                                         </div>
+                                    </div>
+                                    <div class="row">
                                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                             <label class="sf-label">Currency</label>
-                                            <select onchange="claculation(1);get_rate($purhaseRequest->rate)" name="curren" id="curren"
+                                            <select onchange="claculation(1);get_rate('{{ $purchaseRequest->currency_rate }}')" name="curren" id="curren"
                                                 class="form-control select2 requiredField">
-                                                <!-- Will be populated via AJAX -->
+                                               
+                                                @if($purchaseRequest->po_type == '1')
+                                                    <option value="0,1" {{ $purchaseRequest->currency_id == 0 ? 'selected' : '' }}>PKR</option>
+                                                @endif
+                                                @foreach($currencies as $currency)
+                                                    <option value="{{ $currency->id }}" {{ $purchaseRequest->currency_id == $currency->id ? 'selected' : '' }}>
+                                                        {{ $currency->name }}
+                                                    </option>
+                                                @endforeach
                                             </select>
                                         </div>
                                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
@@ -115,12 +144,6 @@ endif;
                                             <input class="form-control" type="text" name="currency_rate"
                                                 id="currency_rate" value="{{ $purchaseRequest->currency_rate }}" />
                                         </div>
-                                        <input type="hidden" name="curren_rate" id="curren_rate"
-                                            value="{{ $purchaseRequest->currency_rate }}" />
-                                    </div>
-
-                                    <div class="lineHeight">&nbsp;</div>
-                                    <div class="row">
                                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                             <label class="sf-label">Mode/ Terms Of Payment</label>
                                             <input onkeyup="calculate_due_date()" type="text" class="form-control"
@@ -132,22 +155,21 @@ endif;
                                             <input type="date" class="form-control" name="due_date" id="due_date"
                                                 value="{{ $purchaseRequest->due_date }}" readonly />
                                         </div>
-                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                                            <label class="sf-label">Supplier's Address</label>
-                                            <input readonly type="text" class="form-control" name="address"
-                                                id="addresss" value="123" />
-                                        </div>
                                     </div>
-
-                                    <div class="lineHeight">&nbsp;</div>
-
                                     <div class="row">
-                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                             <label class="sf-label">Supplier's NTN</label>
                                             <input readonly type="text" class="form-control" name="ntn"
                                                 id="ntn_id" value="" />
                                         </div>
-                                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                        <div class="col-lg-9 col-md-9 col-sm-9 col-xs-12">
+                                            <label class="sf-label">Supplier's Address</label>
+                                            <input readonly type="text" class="form-control" name="address"
+                                                id="addresss" value="" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                             <label class="sf-label">Remarks</label>
                                             <textarea name="Remarks" class="form-control">{{ $purchaseRequest->remarks }}</textarea>
                                         </div>
@@ -187,13 +209,15 @@ endif;
                                                     <th>Amount</th>
                                                     <th class="hide">Discount %</th>
                                                     <th class="hide">Discount Amount</th>
+                                                    <th class="text-center">Tax %</th>
+                                                    <th class="text-center">Tax Amount</th>
                                                     <th>Net Amount<strong>*</strong></th>
-                                                    <th>History</th>
+                                                    <!-- <th>History</th> -->
                                                     <th>Add / Delete</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="AppnedHtml">
-                                                @forelse($purchaseDetails as $index => $detail)
+                                                @foreach($purchaseDetails as $index => $detail)
                                                     <tr id="RemoveRows{{ $index + 1 }}" class="AutoNo main">
                                                         <td>
                                                             <select style="width: 150px;"
@@ -248,7 +272,6 @@ endif;
                                                                 class="form-control requiredField ActualQty"
                                                                 name="actual_qty[]" id="actual_qty{{ $index + 1 }}"
                                                                 value="{{ $detail->purchase_request_qty }}"></td>
-                                                        
                                                         <td><input type="text"
                                                                 onkeyup="claculation({{ $index + 1 }})"
                                                                 class="form-control requiredField ActualRate"
@@ -256,7 +279,7 @@ endif;
                                                                 value="{{ $detail->rate }}"></td>
                                                         <td><input readonly type="text" class="form-control"
                                                                 name="amount[]" id="amount{{ $index + 1 }}"
-                                                                value="{{ $detail->amount }}"></td>
+                                                                value="{{ $detail->rate }}"></td>
                                                         <td><input readonly type="text"
                                                                 class="form-control actual_amount" name="actual_amount[]"
                                                                 id="actual_amount{{ $index + 1 }}"
@@ -272,31 +295,41 @@ endif;
                                                                 name="discount_amount[]"
                                                                 id="discount_amount{{ $index + 1 }}"
                                                                 value="{{ $detail->discount_amount }}"></td>
+                                                        <td>
+                                                            <input type="text" onkeyup="claculation({{ $index + 1 }})" class="form-control" name="tax_per[]" id="tax_per{{ $index + 1 }}" placeholder="Tax %" value="{{ $detail->tax_rate ?? 0 }}">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" onkeyup="net_amount()" class="form-control" name="tax_amount[]" id="tax_amount{{ $index + 1 }}" placeholder="Tax Amount" value="{{ $detail->tax_amount ?? 0 }}">
+                                                        </td>
                                                         <td><input readonly type="text"
                                                                 class="form-control net_amount_dis"
                                                                 name="after_dis_amount[]"
                                                                 id="after_dis_amount{{ $index + 1 }}"
                                                                 value="{{ $detail->net_amount }}"></td>
-                                                        <td><input type="checkbox"
+                                                        <!-- <td><input type="checkbox"
                                                                 onclick="view_history({{ $index + 1 }})"
-                                                                id="view_history{{ $index + 1 }}"></td>
-                                                        <td class="text-center">
-                                                            @if ($index == 0)
+                                                                id="view_history{{ $index + 1 }}"></td> -->
+                                                        <td class="text-center" style="display: flex; gap: 10px;">
                                                                 <input type="button" class="btn btn-sm btn-primary"
+                                                                    style="width: 50px;"
                                                                     onclick="AddMoreDetails()" value="+" />
-                                                            @else
                                                                 <button type="button" class="btn btn-sm btn-danger"
                                                                     onclick="RemoveSection({{ $index + 1 }})"> -
                                                                 </button>
-                                                            @endif
                                                         </td>
                                                     </tr>
-                                                @empty
-                                                    <!-- Same first row as create -->
-                                                @endforelse
+                                                @endforeach
                                             </tbody>
-                                            <!-- Totals and Tax section same as create -->
-                                            <!-- ... (copy from your create form) -->
+                                            <tbody>
+                                                <tr style="font-size:large;font-weight: bold">
+                                                    <td class="text-center" colspan="9">Total</td>
+                                                    <td class="text-right" colspan="1"><input readonly class="form-control" type="text" id="actual_net" value="{{ $purchaseDetails->sum('actual_amount') }}"/> </td>
+                                                    <td class="text-right" colspan="1"><input readonly class="form-control" type="text" id="net" value="{{ $purchaseDetails->sum('amount') }}"/> </td>
+                                                    <td colspan="4"></td>
+                                                    <td class="text-right" colspan="1"><input readonly class="form-control" type="text" id="total_net" value="{{ $purchaseDetails->sum('net_amount') }}"/> </td>
+                                                    <td colspan="2"></td>
+                                                </tr>
+                                            </tbody>
                                         </table>
                                     </div>
 
@@ -306,8 +339,8 @@ endif;
         <table class="table table-bordered sf-table-list">
             <thead>
                 <tr>
-                    <th class="text-center" colspan="3">Description</th>
-                    <th class="text-center" colspan="3">Amount</th>
+                    <th class="text-center" colspan="3">WithHolding Tax</th>
+                    <th class="text-center" colspan="3">WithHolding Tax Amount</th>
                 </tr>
             </thead>
             <tbody>
@@ -336,11 +369,12 @@ endif;
                     <td colspan="3" class="text-center">Total Amount After Tax</td>
                     <td colspan="3" class="text-right">
                         <input readonly class="form-control" type="text" id="net_after_tax"
-                               value="{{ $purchaseRequest->sales_tax_amount + ($purchaseDetails->sum('net_amount') ?? 0) }}" />
+                               value="{{ ($purchaseDetails->sum('net_amount') ?? 0) - $purchaseRequest->sales_tax_amount }}" />
                     </td>
                 </tr>
             </tbody>
         </table>
+        <input type="hidden" id="d_t_amount_1" value="{{ ($purchaseDetails->sum('net_amount') ?? 0) - $purchaseRequest->sales_tax_amount }}" />
     </div>
 </div>
 
@@ -424,9 +458,15 @@ endif;
                 <td><input readonly type="text" class="form-control actual_amount" name="actual_amount[]" id="actual_amount${Counter}" placeholder="AMOUNT"></td>
                 <td class="hide"><input type="text" onkeyup="discount_percent(this.id)" class="form-control" value="0" name="discount_percent[]" id="discount_percent${Counter}"></td>
                 <td class="hide"><input type="text" onkeyup="discount_amount(this.id)" class="form-control" value="0" name="discount_amount[]" id="discount_amount${Counter}"></td>
+                <td><input type="text" onkeyup="claculation(${Counter})" class="form-control" value="0" name="tax_per[]" id="tax_per${Counter}" placeholder="Tax %"></td>
+                <td><input type="text" onkeyup="net_amount()" class="form-control" value="0" name="tax_amount[]" id="tax_amount${Counter}" placeholder="Tax Amount"></td>
                 <td><input readonly type="text" class="form-control net_amount_dis" name="after_dis_amount[]" id="after_dis_amount${Counter}" value="0.00"></td>
-                <td><input onclick="view_history(${Counter})" type="checkbox" id="view_history${Counter}"></td>
-                <td class="text-center">
+              
+                <td class="text-center" style="display: flex; gap: 10px;">
+                         <input type="button" class="btn btn-sm btn-primary"
+                         style="width: 50px;"
+                                                                    onclick="AddMoreDetails()" value="+" />
+                                                       
                     <button type="button" class="btn btn-sm btn-danger" onclick="RemoveSection(${Counter})"> - </button>
                 </td>
             </tr>
@@ -467,18 +507,14 @@ endif;
                         id: selectedValue
                     },
                     success: function(response) {
-                        console.log(response.vendorOptions);
                         $('#curren').empty().append(response.currencyOptions);
                         $('#supplier_id').empty().append(response.vendorOptions);
-                        console.log(response.vendorOptions);
 
-                        $("#supplier_id").val("{{ $purchaseRequest->supplier_id }}").trigger("change");
-                        $("#curren").val("{{ $purchaseRequest->currency_id }}").trigger("change");
-
-                        // Re-select saved values after reload
-                        // $('#curren').val("{{ $purchaseRequest->currency_id }},{{ $purchaseRequest->currency_rate }}").trigger('change');
-                        // $('#supplier_id').val("{{ $purchaseRequest->supplier_id }}@#{{ $purchaseRequest->supplier_address ?? '' }}@#{{ $purchaseRequest->supplier_ntn ?? '' }}@#{{ $purchaseRequest->terms_of_paym }}").trigger('change');
-                        get_address("{{ $purchaseRequest->terms_of_paym }}");
+                        // If not initialization, clear other fields
+                        if(!window.isInitializing) {
+                            $("#supplier_id").val("").trigger("change");
+                            $("#curren").val("").trigger("change");
+                        }
                     }
                 });
             }
@@ -515,7 +551,7 @@ endif;
 
             if (productName > 0) {
                 $.ajax({
-                    url: '/pdc/get_type_barcode_by_product',
+                    url: '{{ url("/pdc/get_type_barcode_by_product") }}',
                     type: 'GET',
                     data: {
                         productName: productName
@@ -526,7 +562,7 @@ endif;
                         $('#product_classification' + index_val).val(response.product_classification_id);
                         $('#product_trend' + index_val).val(response.product_trend_id);
                         $('#uom_id' + index_val).val(response.uom);
-                        // $("#rate" + index_val).val(response.purchase_price);
+                        //$("#rate" + index_val).val(response.purchase_price);
                         claculation(index_val);
                     }
                 });
@@ -538,13 +574,25 @@ endif;
             var rate = parseFloat($('#rate' + number).val()) || 0;
             var currency = parseFloat($('#currency_rate').val()) || 1;
 
-            var actual = (qty * rate).toFixed(2);
-            var total = (qty * rate * currency).toFixed(2);
+            var actual = parseFloat(qty * rate).toFixed(2);
+            var amount = parseFloat(qty * rate).toFixed(2); // Same as actual as per user request
 
-            $('#amount' + number).val(total);
+            $('#amount' + number).val(amount);
             $('#actual_amount' + number).val(actual);
 
-            discount_percent('discount_percent' + number);
+            var tax_per = $('#tax_per' + number).val() || 0;
+            var tax_amount = (amount * tax_per / 100).toFixed(2);
+            $('#tax_amount' + number).val(tax_amount);
+
+            var total_with_tax = parseFloat(amount) + parseFloat(tax_amount);
+
+            var discount_percent_val = $('#discount_percent' + number).val() || 0;
+            var discount_amount = (total_with_tax * discount_percent_val / 100).toFixed(2);
+            $('#discount_amount' + number).val(discount_amount);
+
+            var net_amount_val = (total_with_tax - discount_amount).toFixed(2);
+            $('#after_dis_amount' + number).val(net_amount_val);
+
             net_amount();
             sales_tax('sales_taxx');
         }
@@ -552,6 +600,9 @@ endif;
         function discount_percent(id) {
             var number = id.replace("discount_percent", "");
             var amount = parseFloat($('#amount' + number).val()) || 0;
+            var tax_amount = parseFloat($('#tax_amount' + number).val()) || 0;
+            var total_with_tax = amount + tax_amount;
+
             var percent = parseFloat($('#' + id).val()) || 0;
 
             if (percent > 100) {
@@ -560,10 +611,10 @@ endif;
                 percent = 0;
             }
 
-            var discount_amount = (amount * percent / 100).toFixed(2);
+            var discount_amount = (total_with_tax * percent / 100).toFixed(2);
             $('#discount_amount' + number).val(discount_amount);
 
-            var net = (amount - discount_amount).toFixed(2);
+            var net = (total_with_tax - discount_amount).toFixed(2);
             $('#after_dis_amount' + number).val(net);
 
             net_amount();
@@ -573,51 +624,69 @@ endif;
         function discount_amount(id) {
             var number = id.replace("discount_amount", "");
             var amount = parseFloat($('#amount' + number).val()) || 0;
+            var tax_amount = parseFloat($('#tax_amount' + number).val()) || 0;
+            var total_with_tax = amount + tax_amount;
+
             var disc = parseFloat($('#' + id).val()) || 0;
 
-            if (disc > amount) {
-                alert('Discount cannot exceed amount');
+            if (disc > total_with_tax) {
+                alert('Discount cannot exceed total amount');
                 $('#' + id).val(0);
                 disc = 0;
             }
 
-            var percent = ((disc / amount) * 100).toFixed(2);
+            var percent = ((disc / total_with_tax) * 100).toFixed(2);
             $('#discount_percent' + number).val(percent);
 
-            $('#after_dis_amount' + number).val((amount - disc).toFixed(2));
+            $('#after_dis_amount' + number).val((total_with_tax - disc).toFixed(2));
 
             net_amount();
             sales_tax('sales_taxx');
         }
 
+        function tax_by_amount(id) {
+            net_amount();
+        }
+
         function net_amount() {
             var amount = 0;
             var actual_amount = 0;
+            var total_net = 0;
 
             $('.net_amount_dis').each(function() {
-                amount += parseFloat($(this).val()) || 0;
+                total_net += parseFloat($(this).val()) || 0;
             });
             $('.actual_amount').each(function() {
                 actual_amount += parseFloat($(this).val()) || 0;
             });
+            $('.ActualRate').each(function(i, obj){
+                var num = obj.id.replace("rate", "");
+                var qty = parseFloat($("#actual_qty" + num).val()) || 0;
+                var rate = parseFloat($(obj).val()) || 0;
+                var currency = parseFloat($('#currency_rate').val()) || 1;
+                amount += (qty * rate * currency);
+            });
 
             $('#net').val(amount.toFixed(2));
             $('#actual_net').val(actual_amount.toFixed(2));
+            $('#total_net').val(total_net.toFixed(2));
 
             var sales_tax = parseFloat($('#sales_amount_td').val()) || 0;
-            $('#net_after_tax').val((amount + sales_tax).toFixed(2));
-            $('#d_t_amount_1').val((amount + sales_tax).toFixed(2));
+            $('#net_after_tax').val((total_net - sales_tax).toFixed(2));
+            $('#d_t_amount_1').val((total_net - sales_tax).toFixed(2));
         }
 
         function sales_tax(id) {
-            var per = $('#sales_taxx').val().split("@")[0];
+            var per = $('#sales_taxx').val().split("@")[0] || 0;
+            var tax = 0;
             if (per != '0') {
-                var net = parseFloat($('#net').val()) || 0;
-                var tax = (net * per / 100).toFixed(2);
-                // $('#sales_amount_td').val(tax);
-            } else {
-                // $('#sales_amount_td').val(0);
+                var total_net = 0;
+                $('.net_amount_dis').each(function() {
+                    total_net += parseFloat($(this).val()) || 0;
+                });
+                tax = (total_net * per / 100).toFixed(2);
             }
+            $('#sales_amount_td').val(tax);
             net_amount();
         }
 
@@ -671,6 +740,7 @@ endif;
         }
 
         $(document).ready(function() {
+            window.isInitializing = true;
             $('.select2').select2();
 
             // Load products for existing rows
@@ -681,14 +751,24 @@ endif;
                 }
             });
 
-            // Load supplier and currency based on PO type
-            po_type_change($('#po_type')[0]);
+            // Initial population of address and NTN
+            get_address("{{ $purchaseRequest->terms_of_paym }}");
+
+            // We don't call po_type_change here because we pre-populated dropdowns server-side.
+            // But if we do, we use the initialization flag.
+            // po_type_change($('#po_type')[0]);
 
             // Trigger calculations
+            $('#sales_taxx').on('change', function() {
+                sales_tax('sales_taxx');
+            });
             net_amount();
             sales_tax('sales_taxx');
             calculate_due_date();
-            get_address("{{ $purchaseRequest->terms_of_paym }}");
+            
+            setTimeout(function() {
+                window.isInitializing = false;
+            }, 2000);
         });
 
         function get_discount() {
