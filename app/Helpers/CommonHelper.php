@@ -2062,6 +2062,13 @@ public static function getSubItemByBrand($id, $item_id = null)
         return $grn_data->where('id', $id)->first();
     }
     
+
+
+      public static function get_types() {
+        $types = DB::connection("mysql2")->table("voucher_type")->where("status",1)->get();
+        return $types;
+    }
+
     public static function get_all_subitem()
     {
 
