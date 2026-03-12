@@ -407,22 +407,55 @@ endif;
         $('[name="brand_id[]"]').trigger("change");
         var Counter = {{ count($purchaseDetails) ?: 1 }};
         // TAB key to add new row from last editable field
-        $(document).on('keydown', 'input, select', function(e) {
-            if (e.key === "Tab") {
-                let $inputs = $('input:enabled:not([readonly]), select:enabled:not([readonly])').filter(':visible');
-                let idx = $inputs.index(this);
-                if (idx === $inputs.length - 1) {
-                    e.preventDefault();
-                    AddMoreDetails();
-                    setTimeout(() => {
-                        const $newField = $(`#AppnedHtml tr.main:last`)
-                            .find('input:enabled:not([readonly]), select:enabled:not([readonly])')
-                            .first();
-                        if ($newField.length) $newField.focus();
-                    }, 200);
+        // $(document).on('keydown', 'input, select', function(e) {
+        //     if (e.key === "Tab") {
+        //         let $inputs = $('input:enabled:not([readonly]), select:enabled:not([readonly])').filter(':visible');
+        //         let idx = $inputs.index(this);
+        //         if (idx === $inputs.length - 1) {
+        //             e.preventDefault();
+        //             AddMoreDetails();
+        //             setTimeout(() => {
+        //                 const $newField = $(`#AppnedHtml tr.main:last`)
+        //                     .find('input:enabled:not([readonly]), select:enabled:not([readonly])')
+        //                     .first();
+        //                 if ($newField.length) $newField.focus();
+        //             }, 200);
+        //         }
+        //     }
+        // });
+
+        // TAB key to add new row from last editable field - IMPROVED VERSION
+$(document).on('keydown', 'input, select', function(e) {
+    if (e.key === "Tab" && !e.shiftKey) { // Only Tab, not Shift+Tab
+        // Get all editable fields in the current table only
+        let $currentTable = $(this).closest('table');
+        let $inputs = $currentTable.find('input:enabled:not([readonly]), select:enabled:not([readonly])').filter(':visible');
+        
+        let idx = $inputs.index(this);
+        console.log('Current index:', idx, 'Total:', $inputs.length); // Debug
+        
+        // If this is the last field
+        if (idx === $inputs.length - 1) {
+            e.preventDefault();
+            
+            // Call AddMoreDetails
+            AddMoreDetails();
+            
+            // Focus on first field of new row after a short delay
+            setTimeout(() => {
+                let $newRow = $('#AppnedHtml tr.main:last');
+                let $firstField = $newRow.find('input:enabled:not([readonly]), select:enabled:not([readonly])').first();
+                
+                if ($firstField.length) {
+                    $firstField.focus();
+                } else {
+                    // Fallback to brand select
+                    $newRow.find('select.brand-select').focus();
                 }
-            }
-        });
+            }, 300);
+        }
+    }
+});
 
         function AddMoreDetails() {
             Counter++;
