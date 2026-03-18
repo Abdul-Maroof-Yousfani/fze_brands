@@ -1010,7 +1010,7 @@ class PurchaseController extends Controller
         
         // Validate (ignore unique check for current item)
         $validator = Validator::make($request->all(), [
-            'product_name' => 'required|unique:mysql2.subitem,product_name,' . $id,
+            'product_name' => 'required|unique:mysql2.subitem,' . $id,
         ]);
         
         if ($validator->fails()) {
