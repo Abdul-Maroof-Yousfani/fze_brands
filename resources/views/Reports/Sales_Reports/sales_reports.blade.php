@@ -36,7 +36,7 @@ use App\Helpers\SaleHelper;
                         <label class="control-label">From Date</label>
                         <div class="input-group">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="date" name="from" class="form-control" id="from" value="2025-10-28">
+                            <input type="date" name="from" class="form-control" id="from" value="{{ date('Y-m-d') }}">
                         </div>
                     </div>
                 </div>
@@ -45,7 +45,7 @@ use App\Helpers\SaleHelper;
                         <label class="control-label">To Date</label>
                         <div class="input-group">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="date" name="to" class="form-control" id="to" value="2025-10-28">
+                            <input type="date" name="to" class="form-control" id="to" value="{{ date('Y-m-d') }}">
                         </div>
                     </div>
                 </div>
@@ -149,5 +149,13 @@ use App\Helpers\SaleHelper;
     });
     }
 
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let today = new Date().toISOString().split('T')[0];
+        document.getElementById("from").value = today;
+        document.getElementById("to").value = today;
+    });
 </script>
 @endsection

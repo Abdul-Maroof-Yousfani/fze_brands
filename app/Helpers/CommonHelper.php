@@ -2062,7 +2062,10 @@ public static function getSubItemByBrand($id, $item_id = null)
         return $grn_data->where('id', $id)->first();
     }
     
-
+public static function get_group_by($group_id) {
+    $group = DB::connection("mysql2")->table("company_groups")->find($group_id);
+    return $group->name;
+}
 
       public static function get_types() {
         $types = DB::connection("mysql2")->table("voucher_type")->where("status",1)->get();
