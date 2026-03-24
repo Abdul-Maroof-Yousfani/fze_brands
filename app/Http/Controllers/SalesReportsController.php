@@ -20,7 +20,9 @@ class SalesReportsController extends Controller
                 ->when($so, function ($q) use ($so) {
                     $q->where("so_no", "like", "%$so%");
                 })
-                ->whereBetween("sales_order_data.date", [$request->from, $request->to])
+                // ->whereBetween("sales_order_data.date", [$request->from, $request->to])
+                ->whereDate("sales_order_data.date", '>=', $from)
+->whereDate("sales_order_data.date", '<=', $to)
                 ->groupBy("subitem.sku_code")
                 ->select(
                     "category.main_ic",
