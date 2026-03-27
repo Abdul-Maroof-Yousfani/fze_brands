@@ -267,13 +267,12 @@
                                                         <input style="width: 70px;" readonly name="s_stock[]" class="form-control s_stock" value="" type="text" id="s_stock" tabindex="-1">
                                                     </td>
                                                     <td>
-                                                         <input style="width: 70px;"  onkeyup="calculation_amount(); checkQtyStock(this); totalQty();" name="qty[]" class="form-control qty next-total" value="" type="text" id="qty" tabindex="0">
-                                                    </td>
+                                                        <input style="width: 70px;"  onkeyup="calculation_amount(); checkQtyStock(this); totalQty();" name="qty[]" class="form-control qty" value="" type="text" id="qty" tabindex="0">
                                                     <td>
                                                         <input style="width: 65px;" onkeyup="calculation_amount()" name="foc[]" class="form-control" value="" type="text" id="foc" tabindex="-1">
                                                     </td>
                                                       <td>
-                                                        <input style="width: 80px;" name="rate[]" onkeyup="calculation_amount()" class="form-control" value="" type="text" id="sale_price" tabindex="-1">
+                                                    <input style="width: 80px;" name="rate[]" onkeyup="calculation_amount()" class="form-control next-total" value="" type="text" id="sale_price" tabindex="0">
                                                     </td>
                                                     <td>
                                                         <input style="width: 80px;" readonly name="mrp_price[]" class="form-control" value="" type="text" id="mrp_price" tabindex="-1">
@@ -726,13 +725,13 @@ function AddMoreDetails() {
                     <input type="text" name="s_stock[]" class="form-control s_stock" id="s_stock" style="width:70px;" readonly tabindex="-1">
                 </td>
                 <td>
-                    <input type="text" name="qty[]" class="form-control qty next-total" id="qty" style="width:70px;" onkeyup="checkQtyStock(this);calculation_amount();totalQty();">
+                      <input type="text" name="qty[]" class="form-control qty" id="qty" style="width:70px;" onkeyup="checkQtyStock(this);calculation_amount();totalQty();" tabindex="0">
                 </td>
                 <td>
                     <input type="text" name="foc[]" class="form-control" id="foc" style="width:65px;" onkeyup="calculation_amount();" tabindex="-1">
                 </td>
                 <td>
-                    <input type="text" name="rate[]" class="form-control" id="sale_price" style="width:70px;" onkeyup="calculation_amount();" tabindex="-1">
+              <input type="text" name="rate[]" class="form-control next-total" id="sale_price" style="width:70px;" onkeyup="calculation_amount();" tabindex="0">
                 </td>
                 <td>
                     <input type="text" name="mrp_price[]" class="form-control" id="mrp_price" style="width:70px;" readonly tabindex="-1">
@@ -907,7 +906,29 @@ function get_brand_by_principal_group(element) {
     //     });
     // });
 
-    $('#create-sale-order-form').on('submit', function(event) {
+
+$(document).ready(function() {
+    $('#create-sale-order-form').on('keypress', function(e) {
+        // Check if the pressed key is Enter (key code 13)
+        if (e.which === 13) {
+            // Check if the active element is a textarea (allow Enter in textarea)
+            if ($(e.target).is('textarea')) {
+                return true; // Allow Enter in textarea for new lines
+            }
+            
+            // Check if the active element is a select2 input
+            if ($(e.target).hasClass('select2-search__field')) {
+                return true; // Allow Enter in select2 search
+            }
+            
+            // For all other inputs, prevent form submission
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+
+   $('#create-sale-order-form').on('submit', function(event) {
     event.preventDefault(); // Prevent default form submission
 
     var form = $(this);
@@ -981,7 +1002,6 @@ function get_brand_by_principal_group(element) {
         }
     });
 });
-
     // Aliiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
 // Handle Tab on last total field to add a row
 $(document).on('keydown', '.next-total', function (event) {
