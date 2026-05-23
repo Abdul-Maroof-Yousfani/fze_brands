@@ -50,8 +50,8 @@ $AccYearTo = $AccYearDate->accyearto;
 
                             <div class="lineHeight">&nbsp;</div>
                             <div class="row">
+
                                 <input type="hidden" name="type" id="type" value="{{ request()->type }}" />
-                           
                                 <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                     <label>From Date</label>
                                     <input type="Date" name="FromDate" id="FromDate" min="<?php echo $AccYearFrom?>" max="<?php echo $AccYearTo;?>" value="<?php echo $currentMonthStartDate;?>" class="form-control" />
@@ -66,7 +66,7 @@ $AccYearTo = $AccYearDate->accyearto;
                                 </div>
                             </div>
                             <div class="lineHeight">&nbsp;</div>
-
+                            
                             <div id="printDemandVoucherList">
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -93,14 +93,14 @@ $AccYearTo = $AccYearDate->accyearto;
                                                                 <?php
                                                                 CommonHelper::companyDatabaseConnection($m);
                                                                 $type = request()->type;
-                                                          
+                                                                
                                                                 $MasterData = DB::table('stock_transfer')
-                                                                                ->when($type == 'pending', function($query) {
-                                                                                    $query->where("tr_status", 1);
-                                                                                })
-                                                                                ->where('status', '=', 1)
-                                                                                ->orderBy('id', 'desc')
-                                                                                ->get();
+                                                                                    ->when($type == 'pending', function($query) {
+                                                                                        $query->where("tr_status", 1);
+                                                                                    })
+                                                                                    ->where('status', '=', 1)
+                                                                                    ->orderBy('id', 'desc')
+                                                                                    ->get();
                                                                 CommonHelper::reconnectMasterDatabase();
 
                                                                 $Counter = 1;

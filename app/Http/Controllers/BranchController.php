@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Branch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BranchController extends Controller
 {
-     public function destroy(int $id) {
+    public function destroy(int $id) {
         $branch = Branch::find($id);
         $branch->delete();
         return back()->with("Message", "Branch has been deleted");

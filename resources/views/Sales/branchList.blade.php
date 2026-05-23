@@ -85,7 +85,6 @@ use App\Helpers\CommonHelper;
                                                             </button>
                                                         </form>
                                                     </td>
-                                                    
                                                 </tr>
 
                                             @endforeach

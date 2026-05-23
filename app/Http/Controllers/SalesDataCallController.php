@@ -285,6 +285,11 @@ class SalesDataCallController extends Controller
             $customers = $customers->whereIn('territory_id', $territoryIds);
         }
 
+        if ($request->has('branch_id') && count($request->branch_id) > 0) {
+            $branchIds = $request->branch_id;
+            $customers = $customers->whereIn('branch_id', $branchIds);
+        }
+
         if ($request->has('search') && $request->search != '') {
             $search = strtolower($request->search); 
             $customers =    $customers->whereRaw('LOWER(name) LIKE ?', ['%' . $search . '%'])
@@ -313,6 +318,13 @@ class SalesDataCallController extends Controller
 
             DB::Connection('mysql2')->table('accounts')->where('id',$acc_id)->update($data);
         endif;
+
+        $customer = \Illuminate\Support\Facades\DB::connection("mysql2")->table("customers")->where("id", $CustomerId)->first();
+        $type = "Customer " . $customer->name;
+        \App\Helpers\CommonHelper::createNotification(
+            $type . " is deleted by " . auth()->user()->name,
+            "Customer"
+        );
 
         echo $CustomerId;
 
@@ -1153,7 +1165,8 @@ class SalesDataCallController extends Controller
                 ->leftJoin('sales_order as b', 'a.master_id', '=', 'b.id')
                 ->where('a.status',1)
                 ->where('b.status',1)
-                ->where('a.so_no',$so)
+                ->where('a.gd_no',$so)
+                // ->where('a.so_no',$so)
                 ->select('a.id','a.gd_no as gi_no','a.gd_date as gi_date','b.buyers_id','a.master_id')
                 ->get();
 
@@ -1162,8 +1175,9 @@ class SalesDataCallController extends Controller
 
             $dataa=new SalesTaxInvoice();
             $dataa=$dataa->SetConnection('mysql2');
-            $dataa=$dataa->where('status',1)->where(function ($query) use ($so) {
-                $query->where('so_no', strtolower(trim($so)))
+            $dataa=$dataa->where('status',1)->where('si_status',3)->where(function ($query) use ($so) {
+                $query->where('gi_no', strtolower(trim($so)))
+                // $query->where('so_no', strtolower(trim($so)))
                       ->orWhere('gi_no', strtolower(trim($so)));
             })->select('id','gi_no','gi_date','buyers_id')->get();
           
@@ -2746,14 +2760,37 @@ class SalesDataCallController extends Controller
 
     public function getCustomerCreditNoteData(Request $request)
     {
-        $FromDate = $request->from;
-        $ToDate = $request->to;
-        $m = $request->m;
+        $FromDate   = $request->from;
+        $ToDate     = $request->to;
+        $m          = $request->m;
+        $customer_id = $request->customer_id;
+        $cr_no      = $request->cr_no;
+        $si_dn_no   = $request->si_dn_no;
 
-        $credit_note=new CreditNote();
-        $credit_note=$credit_note->SetConnection('mysql2');
-        $credit_note=$credit_note->where('status',1)->whereBetween('cr_date',[$FromDate,$ToDate])->get();
-        return view('Sales.AjaxPages.getCustomerCreditNoteData',compact('credit_note','m'));
+        $credit_note = DB::Connection('mysql2')->table('credit_note as cn')
+            ->leftJoin('credit_note_data as cnd', 'cnd.master_id', '=', 'cn.id')
+            ->where('cn.status', 1)
+            ->when($FromDate && $ToDate, function($q) use ($FromDate, $ToDate) {
+                $q->whereBetween('cn.cr_date', [$FromDate, $ToDate]);
+            })
+            ->when($customer_id, function($q) use ($customer_id) {
+                $q->where('cn.buyer_id', $customer_id);
+            })
+            ->when($cr_no, function($q) use ($cr_no) {
+                $q->whereRaw('LOWER(cn.cr_no) LIKE ?', ['%'.strtolower($cr_no).'%']);
+            })
+            ->when($si_dn_no, function($q) use ($si_dn_no) {
+                $q->whereRaw('LOWER(cnd.voucher_no) LIKE ?', ['%'.strtolower($si_dn_no).'%']);
+            })
+            ->select(
+                'cn.*',
+                DB::raw('MAX(cnd.voucher_no) as si_dn_no')
+            )
+            ->groupBy('cn.id')
+            ->orderBy('cn.id', 'DESC')
+            ->get();
+
+        return view('Sales.AjaxPages.getCustomerCreditNoteData', compact('credit_note', 'm'));
     }
 
     public function getSalesTaxInvoiceReportData(Request $request)
@@ -2827,6 +2864,12 @@ class SalesDataCallController extends Controller
             endif;
 
             DB::Connection('mysql2')->commit();
+
+            $type = "Sale Return";
+             \App\Helpers\CommonHelper::createNotification(
+                $type . " with " . $cr_on . " is deleted by " . auth()->user()->name, 
+                $type . ""
+            );
         }
         catch(\Exception $e)
         {

@@ -8,8 +8,10 @@ if($accType == 'client'){
 }else{
     $m = Auth::user()->company_id;
 }
-$current_date = date('Y-m-d');
-$currentMonthStartDate = date('Y-m-01');
+// $current_date = date('Y-m-d');
+// $currentMonthStartDate = date('Y-m-01');
+ $current_date = date('Y-m-01', strtotime('-2 months'));
+ $currentMonthStartDate = date('Y-m-01', strtotime('-2 months'));
 $currentMonthEndDate   = date('Y-m-t');
 ?>
 
@@ -121,7 +123,6 @@ $currentMonthEndDate   = date('Y-m-t');
                                     <label for="">Po No</label>
                                     <input type="text" class="form-control" id="PoNo" name="PoNo" placeholder="PO NO">
                                     <input type="hidden" class="form-control" id="type" value="{{ request()->type }}" />
-                 
                                 </div>
                                 <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                     <input type="button" value="Search with PO NO" class="btn btn-sm btn-primary" onclick="getDataPoNoWise();" style="margin-top: 32px;" />
@@ -247,7 +248,6 @@ $currentMonthEndDate   = date('Y-m-t');
                 url: '/stdc/getPoDataPoNoWise',
                 type: 'Get',
                 data: {m:m,PoNo:PoNo, type: $("#type").val()},
-
 
                 success: function (response) {
 

@@ -16,9 +16,7 @@ Route::group(['prefix' => 'hr','before' => 'csrf'], function () {
     Route::get('/viewSubDepartmentList','HrController@viewSubDepartmentList');
     Route::get('/editSubDepartmentForm','HrController@editSubDepartmentForm');
 
-
     Route::get("/editUOM/{id}", "HrController@editUOM");
-
 
     Route::get('/createDesignationForm', 'HrController@createDesignationForm');
     Route::get('/viewDesignationList','HrController@viewDesignationList');
@@ -261,7 +259,6 @@ Route::group(['prefix' => 'had','before' => 'csrf'], function () {
 
     Route::post('/editUoms/{id}', 'HrEditDetailControler@editUOM');
     Route::delete("uom/{id}/delete", "HrEditDetailControler@deleteUOM")->name("uom.delete");
-
 
 
     Route::post('/addDesignationDetail', 'HrAddDetailControler@addDesignationDetail');
